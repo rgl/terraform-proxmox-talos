@@ -1,0 +1,14 @@
+.terraform/
+terraform.tfvars
+*terraform.tfstate*
+tfplan
+*.log
+*.raw
+*.qcow2
+*.gz
+support.zip
+support/
+talosconfig.yml
+kubeconfig.yml
+tmp/
+secret*

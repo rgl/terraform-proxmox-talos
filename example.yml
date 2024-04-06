@@ -1,0 +1,104 @@
+---
+# see https://kubernetes.io/docs/concepts/services-networking/ingress/
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#ingress-v1-networking-k8s-io
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example
+spec:
+  rules:
+    - host: example.example.test
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: example
+                port:
+                  name: web
+---
+# see https://kubernetes.io/docs/concepts/services-networking/service/#type-clusterip
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#service-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#serviceport-v1-core
+apiVersion: v1
+kind: Service
+metadata:
+  name: example
+spec:
+  type: ClusterIP
+  selector:
+    app: example
+  ports:
+    - name: web
+      port: 80
+      protocol: TCP
+      targetPort: web
+---
+# see https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#deployment-v1-apps
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podtemplatespec-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example
+  template:
+    metadata:
+      labels:
+        app: example
+    spec:
+      enableServiceLinks: false
+      containers:
+        # see https://github.com/rgl/example-docker-buildx-go
+        - name: example
+          image: ruilopes/example-docker-buildx-go:v1.11.0
+          args:
+            - -listen=0.0.0.0:9000
+          env:
+            # see https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/
+            # see https://github.com/kubernetes/kubernetes/blob/v1.29.3/test/e2e/common/node/downwardapi.go
+            - name: EXAMPLE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: EXAMPLE_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: EXAMPLE_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: EXAMPLE_POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+            - name: EXAMPLE_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:
+            - name: web
+              containerPort: 9000
+          resources:
+            requests:
+              memory: 20Mi
+              cpu: '0.1'
+            limits:
+              memory: 20Mi
+              cpu: '0.1'
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
