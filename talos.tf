@@ -78,7 +78,6 @@ data "talos_machine_configuration" "controller" {
             # see https://www.talos.dev/v1.6/talos-guides/network/vip/
             {
               interface = "eth0"
-              dhcp      = true
               vip = {
                 ip = var.cluster_vip
               }
