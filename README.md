@@ -6,9 +6,11 @@ An example [Talos Linux](https://www.talos.dev) Kubernetes cluster in Proxmox QE
 
 [Cilium](https://cilium.io) is used to augment the Networking (e.g. the [`LoadBalancer`](https://cilium.io/use-cases/load-balancer/) and [`Ingress`](https://docs.cilium.io/en/stable/network/servicemesh/ingress/) controllers), Observability (e.g. [Service Map](https://cilium.io/use-cases/service-map/)), and Security (e.g. [Network Policy](https://cilium.io/use-cases/network-policy/)).
 
+[LVM](https://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)), [DRBD](https://linbit.com/drbd/), [LINSTOR](https://github.com/LINBIT/linstor-server), and the [Piraeus Operator](https://github.com/piraeusdatastore/piraeus-operator), are used for providing persistent storage volumes.
+
 # Usage (Ubuntu 22.04 host)
 
-Install Terraform:
+Install terraform:
 
 ```bash
 # see https://github.com/hashicorp/terraform/releases
@@ -92,6 +94,7 @@ controllers="$(terraform output -raw controllers)"
 workers="$(terraform output -raw workers)"
 all="$controllers,$workers"
 c0="$(echo $controllers | cut -d , -f 1)"
+w0="$(echo $workers | cut -d , -f 1)"
 talosctl -n $all version
 talosctl -n $all dashboard
 ```
@@ -134,6 +137,82 @@ echo "$example_ip $example_fqdn" | sudo tee -a /etc/hosts
 curl "$example_url"
 xdg-open "$example_url"
 kubectl delete -f example.yml
+```
+
+Execute the [example hello-etcd stateful application](https://github.com/rgl/hello-etcd):
+
+```bash
+# see https://github.com/rgl/hello-etcd/tags
+# renovate: datasource=github-tags depName=rgl/hello-etcd
+hello_etcd_version='0.0.2'
+install -d tmp/hello-etcd
+pushd tmp/hello-etcd
+wget -qO- "https://raw.githubusercontent.com/rgl/hello-etcd/v$hello_etcd_version/manifest.yml" \
+  | perl -pe 's,(storageClassName:).+,$1 linstor-lvm-r1,g' \
+  | perl -pe 's,(storage:).+,$1 1Gi,g' \
+  > manifest.yml
+kubectl apply -f manifest.yml
+kubectl rollout status deployment hello-etcd
+kubectl rollout status statefulset hello-etcd-etcd
+kubectl get service,statefulset,pod,pvc,pv,sc
+kubectl linstor volume list
+```
+
+Access the `hello-etcd` service from a [kubectl port-forward local port](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/):
+
+```bash
+kubectl port-forward service/hello-etcd 6789:web &
+sleep 3
+wget -qO- http://localhost:6789 # Hello World #1!
+wget -qO- http://localhost:6789 # Hello World #2!
+wget -qO- http://localhost:6789 # Hello World #3!
+```
+
+Delete the etcd pod:
+
+```bash
+# NB the used StorageClass is configured with ReclaimPolicy set to Delete. this
+#    means that, when we delete the application PersistentVolumeClaim, the
+#    volume will be deleted from the linstor storage-pool. this also means
+#    that, to play with this, we cannot delete all the application resource. we
+#    have to keep the persistent volume around by only deleting the etcd pod.
+# NB although we delete the pod, the StatefulSet will create a fresh pod to
+#    replace it. using the same persistent volume as the old one.
+kubectl delete pod/hello-etcd-etcd-0
+kubectl get pod/hello-etcd-etcd-0 # NB its age should be in the seconds range.
+kubectl rollout status deployment hello-etcd
+kubectl rollout status statefulset hello-etcd-etcd
+kubectl get pvc,pv
+kubectl linstor volume list
+```
+
+Access the application, and notice that the counter continues after the previously returned value, which means that although the etcd instance is different, it picked up the same persistent volume:
+
+```bash
+wget -qO- http://localhost:6789 # Hello World #4!
+wget -qO- http://localhost:6789 # Hello World #5!
+wget -qO- http://localhost:6789 # Hello World #6!
+```
+
+Delete everything:
+
+```bash
+kubectl delete -f manifest.yml
+kill %1 # kill the kubectl port-forward background command execution.
+# NB the persistent volume will linger for a bit, until it will be eventually
+#    reclaimed and deleted (because the StorageClass is configured with
+#    ReclaimPolicy set to Delete).
+kubectl get pvc,pv
+kubectl linstor volume list
+# force the persistent volume deletion.
+# NB if you do not do this (or wait until the persistent volume is actually
+#    deleted), the associated AWS EBS volume we be left created in your AWS
+#    account, and you have to manually delete it from there.
+kubectl delete pvc/etcd-data-hello-etcd-etcd-0
+# NB you should wait until its actually deleted.
+kubectl get pvc,pv
+kubectl linstor volume list
+popd
 ```
 
 Destroy the infrastructure:
@@ -179,6 +258,8 @@ talosctl -n $c0 list -l -r /dev
 talosctl -n $c0 list -l /sys/fs/cgroup
 talosctl -n $c0 read /proc/cmdline | tr ' ' '\n'
 talosctl -n $c0 read /proc/mounts | sort
+talosctl -n $w0 read /proc/modules | sort
+talosctl -n $w0 read /sys/module/drbd/parameters/usermode_helper
 talosctl -n $c0 read /etc/os-release
 talosctl -n $c0 read /etc/resolv.conf
 talosctl -n $c0 read /etc/containerd/config.toml
@@ -217,4 +298,26 @@ kubectl --namespace kube-system debug $pod_name --stdin --tty --image=busybox:1.
 kubectl --namespace kube-system run busybox -it --rm --restart=Never --image=busybox:1.36 -- nslookup -type=a talos.dev
 kubectl get crds
 kubectl api-resources
+```
+
+Storage (lvm/drbd/linstor/piraeus):
+
+```bash
+# NB kubectl linstor node list is equivalent to:
+#    kubectl -n piraeus-datastore exec deploy/linstor-controller -- linstor node list
+kubectl linstor node list
+kubectl linstor storage-pool list
+kubectl linstor volume list
+kubectl -n piraeus-datastore exec daemonset/linstor-satellite.w0 -- drbdadm status
+kubectl -n piraeus-datastore exec daemonset/linstor-satellite.w0 -- lvdisplay
+kubectl -n piraeus-datastore exec daemonset/linstor-satellite.w0 -- vgdisplay
+kubectl -n piraeus-datastore exec daemonset/linstor-satellite.w0 -- pvdisplay
+w0_csi_node_pod_name="$(
+  kubectl -n piraeus-datastore get pods \
+    --field-selector spec.nodeName=w0 \
+    --selector app.kubernetes.io/component=linstor-csi-node \
+    --output 'jsonpath={.items[*].metadata.name}')"
+kubectl -n piraeus-datastore exec "pod/$w0_csi_node_pod_name" -- lsblk
+kubectl -n piraeus-datastore exec "pod/$w0_csi_node_pod_name" -- bash -c 'mount | grep /dev/drbd'
+kubectl -n piraeus-datastore exec "pod/$w0_csi_node_pod_name" -- bash -c 'df -h | grep -P "Filesystem|/dev/drbd"'
 ```

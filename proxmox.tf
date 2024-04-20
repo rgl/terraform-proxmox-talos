@@ -27,7 +27,7 @@ resource "proxmox_virtual_environment_vm" "controller" {
     cores = 4
   }
   memory {
-    dedicated = 2 * 1024
+    dedicated = 4 * 1024
   }
   vga {
     type = "qxl"
@@ -110,6 +110,15 @@ resource "proxmox_virtual_environment_vm" "worker" {
     size         = 40
     file_format  = "raw"
     file_id      = proxmox_virtual_environment_file.talos.id
+  }
+  disk {
+    datastore_id = "local-lvm"
+    interface    = "scsi1"
+    iothread     = true
+    ssd          = true
+    discard      = "on"
+    size         = 60
+    file_format  = "raw"
   }
   agent {
     enabled = true

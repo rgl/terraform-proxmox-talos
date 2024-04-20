@@ -27,6 +27,20 @@ locals {
           port    = 7445
         }
       }
+      kernel = {
+        modules = [
+          // piraeus dependencies.
+          {
+            name = "drbd"
+            parameters = [
+              "usermode_helper=disabled",
+            ]
+          },
+          {
+            name = "drbd_transport_tcp"
+          },
+        ]
+      }
     }
     cluster = {
       # see https://www.talos.dev/v1.6/talos-guides/discovery/

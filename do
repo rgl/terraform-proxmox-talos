@@ -9,6 +9,18 @@ talos_version="1.6.7"
 # renovate: datasource=docker depName=siderolabs/qemu-guest-agent registryUrl=https://ghcr.io
 talos_qemu_guest_agent_extension_version="8.2.2"
 
+# see https://github.com/siderolabs/extensions/pkgs/container/drbd
+# see https://github.com/siderolabs/extensions/tree/main/storage/drbd
+# see https://github.com/LINBIT/drbd
+# NB the full version version is actually $version-v$talos_version, which we
+#    use in the talos systemExtension imageRef.
+# renovate: datasource=docker depName=siderolabs/drbd extractVersion=^(?<version>.+)-v registryUrl=https://ghcr.io
+talos_drbd_extension_version="9.2.8"
+
+# see https://github.com/piraeusdatastore/piraeus-operator/releases
+# renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator
+piraeus_operator_version="2.5.0"
+
 export CHECKPOINT_DISABLE='1'
 export TF_LOG='DEBUG' # TRACE, DEBUG, INFO, WARN or ERROR.
 export TF_LOG_PATH='terraform.log'
@@ -44,6 +56,7 @@ input:
     imageRef: ghcr.io/siderolabs/installer:$talos_version_tag
   systemExtensions:
     - imageRef: ghcr.io/siderolabs/qemu-guest-agent:$talos_qemu_guest_agent_extension_version
+    - imageRef: ghcr.io/siderolabs/drbd:$talos_drbd_extension_version-v$talos_version
 output:
   kind: image
   imageOptions:
@@ -84,6 +97,8 @@ function apply {
   terraform output -raw talosconfig >talosconfig.yml
   terraform output -raw kubeconfig >kubeconfig.yml
   health
+  piraeus-install
+  info
 }
 
 function health {
@@ -95,7 +110,108 @@ function health {
     health \
     --control-plane-nodes $controllers \
     --worker-nodes $workers
-  info
+}
+
+function piraeus-install {
+  # see https://github.com/piraeusdatastore/piraeus-operator
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.0/docs/how-to/talos.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.0/docs/tutorial/get-started.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.0/docs/tutorial/replicated-volumes.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.0/docs/explanation/components.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.0/docs/reference/linstorsatelliteconfiguration.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.0/docs/reference/linstorcluster.md
+  # see https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/
+  # see https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#ch-kubernetes
+  # see 5.7.1. Available Parameters in a Storage Class at https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-sc-parameters
+  # see https://linbit.com/drbd-user-guide/drbd-guide-9_0-en/
+  # see https://www.talos.dev/v1.6/kubernetes-guides/configuration/storage/#piraeus--linstor
+  step 'piraeus install'
+  kubectl apply --server-side -k "https://github.com/piraeusdatastore/piraeus-operator//config/default?ref=v$piraeus_operator_version"
+  step 'piraeus wait'
+  kubectl wait pod --timeout=5m --for=condition=Ready -n piraeus-datastore -l app.kubernetes.io/component=piraeus-operator
+  step 'piraeus configure'
+  kubectl apply -n piraeus-datastore -f - <<'EOF'
+apiVersion: piraeus.io/v1
+kind: LinstorSatelliteConfiguration
+metadata:
+  name: talos-loader-override
+spec:
+  podTemplate:
+    spec:
+      initContainers:
+        - name: drbd-shutdown-guard
+          $patch: delete
+        - name: drbd-module-loader
+          $patch: delete
+      volumes:
+        - name: run-systemd-system
+          $patch: delete
+        - name: run-drbd-shutdown-guard
+          $patch: delete
+        - name: systemd-bus-socket
+          $patch: delete
+        - name: lib-modules
+          $patch: delete
+        - name: usr-src
+          $patch: delete
+        - name: etc-lvm-backup
+          hostPath:
+            path: /var/etc/lvm/backup
+            type: DirectoryOrCreate
+        - name: etc-lvm-archive
+          hostPath:
+            path: /var/etc/lvm/archive
+            type: DirectoryOrCreate
+EOF
+  kubectl apply -f - <<EOF
+apiVersion: piraeus.io/v1
+kind: LinstorCluster
+metadata:
+  name: linstor
+EOF
+  kubectl apply -f - <<EOF
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+provisioner: linstor.csi.linbit.com
+metadata:
+  name: linstor-lvm-r1
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+parameters:
+  csi.storage.k8s.io/fstype: xfs
+  linstor.csi.linbit.com/autoPlace: "1"
+  linstor.csi.linbit.com/storagePool: lvm
+EOF
+  step 'piraeus configure wait'
+  kubectl wait pod --timeout=5m --for=condition=Ready -n piraeus-datastore -l app.kubernetes.io/name=piraeus-datastore
+  kubectl wait LinstorCluster/linstor --timeout=5m --for=condition=Available
+  step 'piraeus create-device-pool'
+  local workers="$(terraform output -raw workers)"
+  local nodes=($(echo "$workers" | tr ',' ' '))
+  for ((n=0; n<${#nodes[@]}; ++n)); do
+    local node="w$((n))"
+    step "piraeus wait node $node"
+    while ! kubectl linstor storage-pool list --node "$node" >/dev/null 2>&1; do sleep 3; done
+    step "piraeus create-device-pool $node"
+    if ! kubectl linstor storage-pool list --node "$node" --storage-pool lvm | grep -q lvm; then
+      kubectl linstor physical-storage create-device-pool \
+        --pool-name lvm \
+        --storage-pool lvm \
+        lvm \
+        "$node" \
+        /dev/sdb
+    fi
+  done
+}
+
+function piraeus-info {
+  step 'piraeus node list'
+  kubectl linstor node list
+  step 'piraeus storage-pool list'
+  kubectl linstor storage-pool list
+  step 'piraeus volume list'
+  kubectl linstor volume list
 }
 
 function info {
@@ -115,16 +231,9 @@ function info {
     talosctl -n $n read /etc/os-release \
       | sed -E "s,(.+),$n: \1,g"
   done
-}
-
-function upgrade {
-  step 'talosctl upgrade'
-  local controllers=($(terraform output -raw controllers | tr ',' ' '))
-  local workers=($(terraform output -raw workers | tr ',' ' '))
-  for n in "${controllers[@]}" "${workers[@]}"; do
-    talosctl -e $n -n $n upgrade --preserve --wait
-  done
-  health
+  step 'kubernetes nodes'
+  kubectl get nodes -o wide
+  piraeus-info
 }
 
 function destroy {
