@@ -72,7 +72,7 @@ EOF
 source secrets-proxmox.sh
 ```
 
-Install the talos image into Proxmox, and initialize terraform:
+Build the talos image, and initialize terraform:
 
 ```bash
 ./do init
