@@ -3,7 +3,7 @@ set -euo pipefail
 
 # see https://github.com/siderolabs/talos/releases
 # renovate: datasource=github-releases depName=siderolabs/talos
-talos_version="1.6.7"
+talos_version="1.7.1"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/qemu-guest-agent
 # renovate: datasource=docker depName=siderolabs/qemu-guest-agent registryUrl=https://ghcr.io
@@ -33,9 +33,9 @@ function step {
 }
 
 function build_talos_image {
-  # see https://www.talos.dev/v1.6/talos-guides/install/boot-assets/
-  # see https://www.talos.dev/v1.6/advanced/metal-network-configuration/
-  # see Profile type at https://github.com/siderolabs/talos/blob/v1.6.7/pkg/imager/profile/profile.go#L20-L41
+  # see https://www.talos.dev/v1.7/talos-guides/install/boot-assets/
+  # see https://www.talos.dev/v1.7/advanced/metal-network-configuration/
+  # see Profile type at https://github.com/siderolabs/talos/blob/v1.7.1/pkg/imager/profile/profile.go#L22-L45
   local talos_version_tag="v$talos_version"
   rm -rf tmp/talos
   mkdir -p tmp/talos
@@ -124,7 +124,7 @@ function piraeus-install {
   # see https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#ch-kubernetes
   # see 5.7.1. Available Parameters in a Storage Class at https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-sc-parameters
   # see https://linbit.com/drbd-user-guide/drbd-guide-9_0-en/
-  # see https://www.talos.dev/v1.6/kubernetes-guides/configuration/storage/#piraeus--linstor
+  # see https://www.talos.dev/v1.7/kubernetes-guides/configuration/storage/#piraeus--linstor
   step 'piraeus install'
   kubectl apply --server-side -k "https://github.com/piraeusdatastore/piraeus-operator//config/default?ref=v$piraeus_operator_version"
   step 'piraeus wait'
