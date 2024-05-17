@@ -8,6 +8,8 @@ An example [Talos Linux](https://www.talos.dev) Kubernetes cluster in Proxmox QE
 
 [LVM](https://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)), [DRBD](https://linbit.com/drbd/), [LINSTOR](https://github.com/LINBIT/linstor-server), and the [Piraeus Operator](https://github.com/piraeusdatastore/piraeus-operator), are used for providing persistent storage volumes.
 
+The [spin extension](https://github.com/siderolabs/extensions/tree/main/container-runtime/spin), which installs [containerd-shim-spin](https://github.com/spinkube/containerd-shim-spin), is used to provide the ability to run [Spin Applications](https://developer.fermyon.com/spin/v2/index) ([WebAssembly/Wasm](https://webassembly.org/)).
+
 # Usage (Ubuntu 22.04 host)
 
 Install terraform:
@@ -213,6 +215,23 @@ kubectl delete pvc/etcd-data-hello-etcd-etcd-0
 kubectl get pvc,pv
 kubectl linstor volume list
 popd
+```
+
+Execute an [example WebAssembly (Wasm) Spin workload](https://github.com/rgl/spin-http-rust-example):
+
+```bash
+export KUBECONFIG=$PWD/kubeconfig.yml
+kubectl apply -f example-spin.yml
+kubectl rollout status deployment/example-spin
+kubectl get ingresses,services,pods,deployments
+example_spin_ip="$(kubectl get ingress/example-spin -o json | jq -r .status.loadBalancer.ingress[0].ip)"
+example_spin_fqdn="$(kubectl get ingress/example-spin -o json | jq -r .spec.rules[0].host)"
+example_spin_url="http://$example_spin_fqdn"
+curl --resolve "$example_spin_fqdn:80:$example_spin_ip" "$example_spin_url"
+echo "$example_spin_ip $example_spin_fqdn" | sudo tee -a /etc/hosts
+curl "$example_spin_url"
+xdg-open "$example_spin_url"
+kubectl delete -f example-spin.yml
 ```
 
 Destroy the infrastructure:

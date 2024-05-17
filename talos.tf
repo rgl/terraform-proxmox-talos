@@ -110,6 +110,16 @@ data "talos_machine_configuration" "controller" {
               "# Source cilium.tf\n${local.cilium_external_lb_manifest}",
             ])
           },
+          {
+            name     = "spin"
+            contents = <<-EOF
+            apiVersion: node.k8s.io/v1
+            kind: RuntimeClass
+            metadata:
+              name: wasmtime-spin-v2
+            handler: spin
+            EOF
+          },
         ],
       },
     }),
