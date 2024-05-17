@@ -1,6 +1,6 @@
 # see https://github.com/hashicorp/terraform
 terraform {
-  required_version = "1.8.2"
+  required_version = "1.8.3"
   required_providers {
     # see https://registry.terraform.io/providers/hashicorp/random
     # see https://github.com/hashicorp/terraform-provider-random
@@ -18,7 +18,7 @@ terraform {
     # see https://github.com/bpg/terraform-provider-proxmox
     proxmox = {
       source  = "bpg/proxmox"
-      version = "0.55.0"
+      version = "0.57.0"
     }
     # see https://registry.terraform.io/providers/siderolabs/talos
     # see https://github.com/siderolabs/terraform-provider-talos
@@ -30,7 +30,7 @@ terraform {
     # see https://github.com/hashicorp/terraform-provider-helm
     helm = {
       source  = "hashicorp/helm"
-      version = "2.13.1"
+      version = "2.13.2"
     }
   }
 }

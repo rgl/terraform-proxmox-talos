@@ -15,7 +15,7 @@ Install terraform:
 ```bash
 # see https://github.com/hashicorp/terraform/releases
 # renovate: datasource=github-releases depName=hashicorp/terraform
-terraform_version='1.8.2'
+terraform_version='1.8.3'
 wget "https://releases.hashicorp.com/terraform/$terraform_version/terraform_${$terraform_version}_linux_amd64.zip"
 unzip "terraform_${$terraform_version}_linux_amd64.zip"
 sudo install terraform /usr/local/bin
@@ -27,7 +27,7 @@ Install cilium cli:
 ```bash
 # see https://github.com/cilium/cilium-cli/releases
 # renovate: datasource=github-releases depName=cilium/cilium-cli
-cilium_version='0.16.6'
+cilium_version='0.16.7'
 cilium_url="https://github.com/cilium/cilium-cli/releases/download/v$cilium_version/cilium-linux-amd64.tar.gz"
 wget -O- "$cilium_url" | tar xzf - cilium
 sudo install cilium /usr/local/bin/cilium
@@ -39,7 +39,7 @@ Install cilium hubble:
 ```bash
 # see https://github.com/cilium/hubble/releases
 # renovate: datasource=github-releases depName=cilium/hubble
-hubble_version='0.13.3'
+hubble_version='0.13.4'
 hubble_url="https://github.com/cilium/hubble/releases/download/v$hubble_version/hubble-linux-amd64.tar.gz"
 wget -O- "$hubble_url" | tar xzf - hubble
 sudo install hubble /usr/local/bin/hubble
@@ -61,7 +61,7 @@ Set your Proxmox details:
 
 ```bash
 # see https://registry.terraform.io/providers/bpg/proxmox/latest/docs#argument-reference
-# see https://github.com/bpg/terraform-provider-proxmox/blob/v0.55.0/proxmoxtf/provider/provider.go#L49-L56
+# see https://github.com/bpg/terraform-provider-proxmox/blob/v0.57.0/proxmoxtf/provider/provider.go#L49-L56
 cat >secrets-proxmox.sh <<EOF
 unset HTTPS_PROXY
 #export HTTPS_PROXY='http://localhost:8080'

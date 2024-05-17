@@ -6,8 +6,9 @@ set -euo pipefail
 talos_version="1.7.1"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/qemu-guest-agent
+# see https://github.com/siderolabs/extensions/tree/main/guest-agents/qemu-guest-agent
 # renovate: datasource=docker depName=siderolabs/qemu-guest-agent registryUrl=https://ghcr.io
-talos_qemu_guest_agent_extension_version="8.2.2"
+talos_qemu_guest_agent_extension_version="8.2.3"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/drbd
 # see https://github.com/siderolabs/extensions/tree/main/storage/drbd
