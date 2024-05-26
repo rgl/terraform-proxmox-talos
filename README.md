@@ -175,9 +175,12 @@ Delete the etcd pod:
 ```bash
 # NB the used StorageClass is configured with ReclaimPolicy set to Delete. this
 #    means that, when we delete the application PersistentVolumeClaim, the
-#    volume will be deleted from the linstor storage-pool. this also means
-#    that, to play with this, we cannot delete all the application resource. we
-#    have to keep the persistent volume around by only deleting the etcd pod.
+#    volume will be deleted from the linstor storage-pool. please note that
+#    this will only happen when the pvc finalizers list is empty. since the
+#    pvc is created by the statefulset, and it adds the
+#    kubernetes.io/pvc-protection finalizer, which means, the pvc will only be
+#    deleted when you explicitly delete it (and nothing is using it as noted by
+#    an empty finalizers list)
 # NB although we delete the pod, the StatefulSet will create a fresh pod to
 #    replace it. using the same persistent volume as the old one.
 kubectl delete pod/hello-etcd-etcd-0
@@ -201,15 +204,13 @@ Delete everything:
 ```bash
 kubectl delete -f manifest.yml
 kill %1 # kill the kubectl port-forward background command execution.
-# NB the persistent volume will linger for a bit, until it will be eventually
-#    reclaimed and deleted (because the StorageClass is configured with
-#    ReclaimPolicy set to Delete).
+# NB the pvc will not be automatically deleted because it has the
+#    kubernetes.io/pvc-protection finalizer (set by the statefulset).
+#    which prevents it from being automatically deleted.
 kubectl get pvc,pv
 kubectl linstor volume list
-# force the persistent volume deletion.
-# NB if you do not do this (or wait until the persistent volume is actually
-#    deleted), the associated AWS EBS volume we be left created in your AWS
-#    account, and you have to manually delete it from there.
+# delete the pvc (which will also trigger the pv (persistent volume) deletion
+# because the associated storageclass reclaim policy is set to delete).
 kubectl delete pvc/etcd-data-hello-etcd-etcd-0
 # NB you should wait until its actually deleted.
 kubectl get pvc,pv
