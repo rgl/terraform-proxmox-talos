@@ -177,7 +177,8 @@ Delete the etcd pod:
 #    means that, when we delete the application PersistentVolumeClaim, the
 #    volume will be deleted from the linstor storage-pool. please note that
 #    this will only happen when the pvc finalizers list is empty. since the
-#    pvc is created by the statefulset, and it adds the
+#    pvc is created by the statefulset (due to having
+#    persistentVolumeClaimRetentionPolicy set to Retain), and it adds the
 #    kubernetes.io/pvc-protection finalizer, which means, the pvc will only be
 #    deleted when you explicitly delete it (and nothing is using it as noted by
 #    an empty finalizers list)
@@ -203,10 +204,11 @@ Delete everything:
 
 ```bash
 kubectl delete -f manifest.yml
-kill %1 # kill the kubectl port-forward background command execution.
+kill %1 && sleep 1 # kill the kubectl port-forward background command execution.
 # NB the pvc will not be automatically deleted because it has the
-#    kubernetes.io/pvc-protection finalizer (set by the statefulset).
-#    which prevents it from being automatically deleted.
+#    kubernetes.io/pvc-protection finalizer (set by the statefulset, due to
+#    having persistentVolumeClaimRetentionPolicy set to Retain), which prevents
+#    it from being automatically deleted.
 kubectl get pvc,pv
 kubectl linstor volume list
 # delete the pvc (which will also trigger the pv (persistent volume) deletion
