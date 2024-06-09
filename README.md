@@ -146,7 +146,7 @@ Execute the [example hello-etcd stateful application](https://github.com/rgl/hel
 ```bash
 # see https://github.com/rgl/hello-etcd/tags
 # renovate: datasource=github-tags depName=rgl/hello-etcd
-hello_etcd_version='0.0.2'
+hello_etcd_version='0.0.3'
 install -d tmp/hello-etcd
 pushd tmp/hello-etcd
 wget -qO- "https://raw.githubusercontent.com/rgl/hello-etcd/v$hello_etcd_version/manifest.yml" \
