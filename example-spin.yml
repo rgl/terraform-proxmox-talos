@@ -1,6 +1,6 @@
 ---
 # see https://kubernetes.io/docs/concepts/services-networking/ingress/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#ingress-v1-networking-k8s-io
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#ingress-v1-networking-k8s-io
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -19,8 +19,8 @@ spec:
                   name: web
 ---
 # see https://kubernetes.io/docs/concepts/services-networking/service/#type-clusterip
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#service-v1-core
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#serviceport-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#service-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#serviceport-v1-core
 apiVersion: v1
 kind: Service
 metadata:
@@ -36,11 +36,11 @@ spec:
       targetPort: web
 ---
 # see https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#deployment-v1-apps
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podtemplatespec-v1-core
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#probe-v1-core
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#httpgetaction-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#deployment-v1-apps
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#podtemplatespec-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#container-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#probe-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#httpgetaction-v1-core
 apiVersion: apps/v1
 kind: Deployment
 metadata:
