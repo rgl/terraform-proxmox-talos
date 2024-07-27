@@ -253,6 +253,130 @@ echo "$gitea_ip $gitea_fqdn" | sudo tee -a /etc/hosts
 xdg-open "$gitea_url"
 ```
 
+Access Argo CD:
+
+```bash
+export KUBECONFIG=$PWD/kubeconfig.yml
+argocd_server_ip="$(kubectl get -n argocd ingress/argocd-server -o json | jq -r .status.loadBalancer.ingress[0].ip)"
+argocd_server_fqdn="$(kubectl get -n argocd ingress/argocd-server -o json | jq -r .spec.rules[0].host)"
+argocd_server_url="https://$argocd_server_fqdn"
+argocd_server_admin_password="$(
+  kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" \
+    | base64 --decode)"
+echo "argocd_server_url: $argocd_server_url"
+echo "argocd_server_admin_password: $argocd_server_admin_password"
+echo "$argocd_server_ip $argocd_server_fqdn" | sudo tee -a /etc/hosts
+xdg-open "$argocd_server_url"
+```
+
+If the Argo CD UI is showing these kind of errors:
+
+> Unable to load data: error getting cached app managed resources: NOAUTH Authentication required.
+> Unable to load data: error getting cached app managed resources: cache: key is missing
+> Unable to load data: error getting cached app managed resources: InvalidSpecError: Application referencing project default which does not exist
+
+Try restarting some of the Argo CD components, and after restarting them, the
+Argo CD UI should start working after a few minutes (e.g. at the next sync
+interval, which defaults to 3m):
+
+```bash
+kubectl -n argocd rollout restart statefulset argocd-application-controller
+kubectl -n argocd rollout status statefulset argocd-application-controller --watch
+kubectl -n argocd rollout restart deployment argocd-server
+kubectl -n argocd rollout status deployment argocd-server --watch
+```
+
+Deploy an example Argo CD application:
+
+```bash
+# create the example repository.
+export SSL_CERT_FILE="$PWD/kubernetes-ingress-ca-crt.pem"
+export GIT_SSL_CAINFO="$SSL_CERT_FILE"
+curl \
+  --silent \
+  --show-error \
+  --fail-with-body \
+  -u gitea:gitea \
+  -X POST \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "argocd-example",
+    "private": true
+  }' \
+  https://gitea.example.test/api/v1/user/repos \
+  | jq
+rm -rf tmp/argocd-example
+git init tmp/argocd-example
+pushd tmp/argocd-example
+git branch -m main
+cp ../../example.yml .
+git add .
+git commit -m init
+git remote add origin https://gitea.example.test/gitea/argocd-example.git
+git push -u origin main
+popd
+
+# create the argocd-example argocd application.
+# NB we have to access gitea thru the internal cluster service because the
+#    external/ingress domains does not resolve inside the cluster.
+argocd login \
+  "$argocd_server_fqdn" \
+  --username admin \
+  --password "$argocd_server_admin_password"
+argocd cluster list
+# NB if git repository was hosted outside of the cluster, we might have
+#    needed to execute the following to trust the certificate.
+#     argocd cert add-tls gitea.example.test --from "$SSL_CERT_FILE"
+#     argocd cert list --cert-type https
+argocd repo add \
+  http://gitea-http.default.svc:3000/gitea/argocd-example.git \
+  --username gitea \
+  --password gitea
+argocd app create \
+  argocd-example \
+  --dest-name in-cluster \
+  --dest-namespace default \
+  --project default \
+  --auto-prune \
+  --self-heal \
+  --sync-policy automatic \
+  --repo http://gitea-http.default.svc:3000/gitea/argocd-example.git \
+  --path .
+argocd app list
+kubectl get crd | grep argoproj.io
+kubectl -n argocd get applications
+kubectl -n argocd get application/argocd-example -o yaml
+
+# access the example application.
+kubectl rollout status deployment/example
+kubectl get ingresses,services,pods,deployments
+example_ip="$(kubectl get ingress/example -o json | jq -r .status.loadBalancer.ingress[0].ip)"
+example_fqdn="$(kubectl get ingress/example -o json | jq -r .spec.rules[0].host)"
+example_url="http://$example_fqdn"
+curl --resolve "$example_fqdn:80:$example_ip" "$example_url"
+echo "$example_ip $example_fqdn" | sudo tee -a /etc/hosts
+curl "$example_url"
+xdg-open "$example_url"
+
+# modify the example application.
+pushd tmp/argocd-example
+sed -i -E 's,(replicas:) .+,\1 3,g' example.yml
+git diff
+git add .
+git commit -m 'bump replicas'
+git push -u origin main
+popd
+
+# then go the argocd ui, and wait for it to eventually sync the argocd
+# example application.
+
+# delete the argocd-example argocd application.
+argocd app delete \
+  argocd-example \
+  --yes
+```
+
 Destroy the infrastructure:
 
 ```bash

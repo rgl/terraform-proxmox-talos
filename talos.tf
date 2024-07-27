@@ -156,6 +156,20 @@ data "talos_machine_configuration" "controller" {
               "# Source gitea.tf\n${local.gitea_manifest}",
             ])
           },
+          {
+            name = "argocd"
+            contents = join("---\n", [
+              yamlencode({
+                apiVersion = "v1"
+                kind       = "Namespace"
+                metadata = {
+                  name = local.argocd_namespace
+                }
+              }),
+              data.helm_template.argocd.manifest,
+              "# Source argocd.tf\n${local.argocd_manifest}",
+            ])
+          },
         ],
       },
     }),
