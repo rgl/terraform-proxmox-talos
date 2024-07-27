@@ -1,4 +1,4 @@
-# see https://registry.terraform.io/providers/bpg/proxmox/0.60.0/docs/resources/virtual_environment_file
+# see https://registry.terraform.io/providers/bpg/proxmox/0.61.1/docs/resources/virtual_environment_file
 resource "proxmox_virtual_environment_file" "talos" {
   datastore_id = "local"
   node_name    = "pve"
@@ -9,7 +9,7 @@ resource "proxmox_virtual_environment_file" "talos" {
   }
 }
 
-# see https://registry.terraform.io/providers/bpg/proxmox/0.60.0/docs/resources/virtual_environment_vm
+# see https://registry.terraform.io/providers/bpg/proxmox/0.61.1/docs/resources/virtual_environment_vm
 resource "proxmox_virtual_environment_vm" "controller" {
   count           = var.controller_count
   name            = "${var.prefix}-${local.controller_nodes[count.index].name}"
@@ -67,7 +67,7 @@ resource "proxmox_virtual_environment_vm" "controller" {
   }
 }
 
-# see https://registry.terraform.io/providers/bpg/proxmox/0.60.0/docs/resources/virtual_environment_vm
+# see https://registry.terraform.io/providers/bpg/proxmox/0.61.1/docs/resources/virtual_environment_vm
 resource "proxmox_virtual_environment_vm" "worker" {
   count           = var.worker_count
   name            = "${var.prefix}-${local.worker_nodes[count.index].name}"
