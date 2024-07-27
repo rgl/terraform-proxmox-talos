@@ -105,6 +105,7 @@ function apply {
   terraform output -raw kubeconfig >kubeconfig.yml
   health
   piraeus-install
+  export-kubernetes-ingress-ca-crt
   info
 }
 
@@ -241,6 +242,12 @@ function info {
   step 'kubernetes nodes'
   kubectl get nodes -o wide
   piraeus-info
+}
+
+function export-kubernetes-ingress-ca-crt {
+  kubectl get -n cert-manager secret/ingress-tls -o jsonpath='{.data.tls\.crt}' \
+    | base64 -d \
+    > kubernetes-ingress-ca-crt.pem
 }
 
 function destroy {

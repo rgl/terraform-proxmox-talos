@@ -120,6 +120,20 @@ data "talos_machine_configuration" "controller" {
               "# Source cilium.tf\n${local.cilium_external_lb_manifest}",
             ])
           },
+          {
+            name = "cert-manager"
+            contents = join("---\n", [
+              yamlencode({
+                apiVersion = "v1"
+                kind       = "Namespace"
+                metadata = {
+                  name = "cert-manager"
+                }
+              }),
+              data.helm_template.cert_manager.manifest,
+              "# Source cert-manager.tf\n${local.cert_manager_ingress_ca_manifest}",
+            ])
+          },
         ],
       },
     }),

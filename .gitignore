@@ -10,5 +10,6 @@ support.zip
 support/
 talosconfig.yml
 kubeconfig.yml
+kubernetes-ingress-ca-crt.pem
 tmp/
 secret*

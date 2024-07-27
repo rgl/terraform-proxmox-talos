@@ -85,6 +85,12 @@ variable "cluster_node_network_load_balancer_last_hostnum" {
   default     = 230
 }
 
+variable "ingress_domain" {
+  description = "the DNS domain of the ingress resources"
+  type        = string
+  default     = "example.test"
+}
+
 variable "controller_count" {
   type    = number
   default = 1
