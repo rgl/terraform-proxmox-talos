@@ -138,6 +138,10 @@ data "talos_machine_configuration" "controller" {
             name     = "trust-manager"
             contents = data.helm_template.trust_manager.manifest
           },
+          {
+            name     = "reloader"
+            contents = data.helm_template.reloader.manifest
+          },
         ],
       },
     }),
