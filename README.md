@@ -237,6 +237,22 @@ xdg-open "$example_spin_url"
 kubectl delete -f example-spin.yml
 ```
 
+Access Gitea:
+
+```bash
+export KUBECONFIG=$PWD/kubeconfig.yml
+export SSL_CERT_FILE="$PWD/kubernetes-ingress-ca-crt.pem"
+gitea_ip="$(kubectl get ingress/gitea -o json | jq -r .status.loadBalancer.ingress[0].ip)"
+gitea_fqdn="$(kubectl get ingress/gitea -o json | jq -r .spec.rules[0].host)"
+gitea_url="https://$gitea_fqdn"
+echo "gitea_url: $gitea_url"
+echo "gitea_username: gitea"
+echo "gitea_password: gitea"
+curl --resolve "$gitea_fqdn:443:$gitea_ip" "$gitea_url"
+echo "$gitea_ip $gitea_fqdn" | sudo tee -a /etc/hosts
+xdg-open "$gitea_url"
+```
+
 Destroy the infrastructure:
 
 ```bash
