@@ -21,7 +21,7 @@ talos_drbd_extension_version="9.2.8"
 # see https://github.com/siderolabs/extensions/pkgs/container/spin
 # see https://github.com/siderolabs/extensions/tree/main/container-runtime/spin
 # renovate: datasource=docker depName=siderolabs/spin registryUrl=https://ghcr.io
-talos_spin_extension_version="0.14.1"
+talos_spin_extension_version="0.15.0"
 
 # see https://github.com/piraeusdatastore/piraeus-operator/releases
 # renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator
