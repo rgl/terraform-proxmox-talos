@@ -134,6 +134,10 @@ data "talos_machine_configuration" "controller" {
               "# Source cert-manager.tf\n${local.cert_manager_ingress_ca_manifest}",
             ])
           },
+          {
+            name     = "trust-manager"
+            contents = data.helm_template.trust_manager.manifest
+          },
         ],
       },
     }),
