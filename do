@@ -25,7 +25,7 @@ talos_spin_extension_version="0.15.0"
 
 # see https://github.com/piraeusdatastore/piraeus-operator/releases
 # renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator
-piraeus_operator_version="2.5.1"
+piraeus_operator_version="2.5.2"
 
 export CHECKPOINT_DISABLE='1'
 export TF_LOG='DEBUG' # TRACE, DEBUG, INFO, WARN or ERROR.
@@ -121,12 +121,12 @@ function health {
 
 function piraeus-install {
   # see https://github.com/piraeusdatastore/piraeus-operator
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.1/docs/how-to/talos.md
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.1/docs/tutorial/get-started.md
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.1/docs/tutorial/replicated-volumes.md
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.1/docs/explanation/components.md
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.1/docs/reference/linstorsatelliteconfiguration.md
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.1/docs/reference/linstorcluster.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/how-to/talos.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/tutorial/get-started.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/tutorial/replicated-volumes.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/explanation/components.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/reference/linstorsatelliteconfiguration.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/reference/linstorcluster.md
   # see https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/
   # see https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#ch-kubernetes
   # see 5.7.1. Available Parameters in a Storage Class at https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-sc-parameters
