@@ -3,20 +3,20 @@ set -euo pipefail
 
 # see https://github.com/siderolabs/talos/releases
 # renovate: datasource=github-releases depName=siderolabs/talos
-talos_version="1.7.5"
+talos_version="1.7.6"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/qemu-guest-agent
 # see https://github.com/siderolabs/extensions/tree/main/guest-agents/qemu-guest-agent
-talos_qemu_guest_agent_extension_tag="8.2.2@sha256:2fef4a09f398008c88bad11aaa4fabba0cf8f756964543e26457a9b084c565cb"
+talos_qemu_guest_agent_extension_tag="8.2.2@sha256:e8020f513f891896fd3bb506c7af8a763a3c70b063e4901caaad073b5e6e0815"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/drbd
 # see https://github.com/siderolabs/extensions/tree/main/storage/drbd
 # see https://github.com/LINBIT/drbd
-talos_drbd_extension_tag="9.2.8-v1.7.5@sha256:b6084d2eaae1eda40a4f77c3e305cf83f6d630a4cc73b973dd21e3f68563138f"
+talos_drbd_extension_tag="9.2.8-v1.7.6@sha256:acd871c1367ce94121689d069fd563c54ca0edac8698325f34a41dd3456eceea"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/spin
 # see https://github.com/siderolabs/extensions/tree/main/container-runtime/spin
-talos_spin_extension_tag="v0.13.1@sha256:dc1cf067159e66221b1a8dab59c817228cdc0dfc87ed6ae1edcc45743ddcd450"
+talos_spin_extension_tag="v0.15.0@sha256:0ec7613913960c95413699a46745a788d4c22776942c2d24ebd0457f11e6be33"
 
 # see https://github.com/piraeusdatastore/piraeus-operator/releases
 # renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator
@@ -61,7 +61,7 @@ function update-talos-extensions {
 function build_talos_image {
   # see https://www.talos.dev/v1.7/talos-guides/install/boot-assets/
   # see https://www.talos.dev/v1.7/advanced/metal-network-configuration/
-  # see Profile type at https://github.com/siderolabs/talos/blob/v1.7.5/pkg/imager/profile/profile.go#L22-L45
+  # see Profile type at https://github.com/siderolabs/talos/blob/v1.7.6/pkg/imager/profile/profile.go#L22-L45
   local talos_version_tag="v$talos_version"
   rm -rf tmp/talos
   mkdir -p tmp/talos
@@ -156,7 +156,7 @@ function piraeus-install {
   step 'piraeus install'
   kubectl apply --server-side -k "https://github.com/piraeusdatastore/piraeus-operator//config/default?ref=v$piraeus_operator_version"
   step 'piraeus wait'
-  kubectl wait pod --timeout=5m --for=condition=Ready -n piraeus-datastore -l app.kubernetes.io/component=piraeus-operator
+  kubectl wait pod --timeout=15m --for=condition=Ready -n piraeus-datastore -l app.kubernetes.io/component=piraeus-operator
   step 'piraeus configure'
   kubectl apply -n piraeus-datastore -f - <<'EOF'
 apiVersion: piraeus.io/v1
@@ -212,8 +212,8 @@ parameters:
   linstor.csi.linbit.com/storagePool: lvm
 EOF
   step 'piraeus configure wait'
-  kubectl wait pod --timeout=5m --for=condition=Ready -n piraeus-datastore -l app.kubernetes.io/name=piraeus-datastore
-  kubectl wait LinstorCluster/linstor --timeout=5m --for=condition=Available
+  kubectl wait pod --timeout=15m --for=condition=Ready -n piraeus-datastore -l app.kubernetes.io/name=piraeus-datastore
+  kubectl wait LinstorCluster/linstor --timeout=15m --for=condition=Available
   step 'piraeus create-device-pool'
   local workers="$(terraform output -raw workers)"
   local nodes=($(echo "$workers" | tr ',' ' '))
