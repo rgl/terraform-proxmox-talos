@@ -7,21 +7,16 @@ talos_version="1.7.5"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/qemu-guest-agent
 # see https://github.com/siderolabs/extensions/tree/main/guest-agents/qemu-guest-agent
-# renovate: datasource=docker depName=siderolabs/qemu-guest-agent registryUrl=https://ghcr.io
-talos_qemu_guest_agent_extension_version="9.0.1"
+talos_qemu_guest_agent_extension_tag="8.2.2@sha256:2fef4a09f398008c88bad11aaa4fabba0cf8f756964543e26457a9b084c565cb"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/drbd
 # see https://github.com/siderolabs/extensions/tree/main/storage/drbd
 # see https://github.com/LINBIT/drbd
-# NB the full version version is actually $version-v$talos_version, which we
-#    use in the talos systemExtension imageRef.
-# renovate: datasource=docker depName=siderolabs/drbd extractVersion=^(?<version>.+)-v1\.7\.5 registryUrl=https://ghcr.io
-talos_drbd_extension_version="9.2.8"
+talos_drbd_extension_tag="9.2.8-v1.7.5@sha256:b6084d2eaae1eda40a4f77c3e305cf83f6d630a4cc73b973dd21e3f68563138f"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/spin
 # see https://github.com/siderolabs/extensions/tree/main/container-runtime/spin
-# renovate: datasource=docker depName=siderolabs/spin registryUrl=https://ghcr.io
-talos_spin_extension_version="0.15.0"
+talos_spin_extension_tag="v0.13.1@sha256:dc1cf067159e66221b1a8dab59c817228cdc0dfc87ed6ae1edcc45743ddcd450"
 
 # see https://github.com/piraeusdatastore/piraeus-operator/releases
 # renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator
@@ -36,6 +31,31 @@ export KUBECONFIG=$PWD/kubeconfig.yml
 
 function step {
   echo "### $* ###"
+}
+
+function update-talos-extension {
+  # see https://github.com/siderolabs/extensions?tab=readme-ov-file#installing-extensions
+  local variable_name="$1"
+  local image_name="$2"
+  local images="$3"
+  local image="$(grep -F "$image_name:" <<<"$images")"
+  local tag="${image#*:}"
+  echo "updating the talos extension to $image..."
+  variable_name="$variable_name" tag="$tag" perl -i -pe '
+    BEGIN {
+      $var = $ENV{variable_name};
+      $val = $ENV{tag};
+    }
+    s/^(\Q$var\E=).*/$1"$val"/;
+  ' do
+}
+
+function update-talos-extensions {
+  step "updating the talos extensions"
+  local images="$(crane export "ghcr.io/siderolabs/extensions:v$talos_version" | tar x -O image-digests)"
+  update-talos-extension talos_qemu_guest_agent_extension_tag ghcr.io/siderolabs/qemu-guest-agent "$images"
+  update-talos-extension talos_drbd_extension_tag ghcr.io/siderolabs/drbd "$images"
+  update-talos-extension talos_spin_extension_tag ghcr.io/siderolabs/spin "$images"
 }
 
 function build_talos_image {
@@ -61,9 +81,9 @@ input:
   baseInstaller:
     imageRef: ghcr.io/siderolabs/installer:$talos_version_tag
   systemExtensions:
-    - imageRef: ghcr.io/siderolabs/qemu-guest-agent:$talos_qemu_guest_agent_extension_version
-    - imageRef: ghcr.io/siderolabs/drbd:$talos_drbd_extension_version-v$talos_version
-    - imageRef: ghcr.io/siderolabs/spin:v$talos_spin_extension_version
+    - imageRef: ghcr.io/siderolabs/qemu-guest-agent:$talos_qemu_guest_agent_extension_tag
+    - imageRef: ghcr.io/siderolabs/drbd:$talos_drbd_extension_tag
+    - imageRef: ghcr.io/siderolabs/spin:$talos_spin_extension_tag
 output:
   kind: image
   imageOptions:
@@ -255,6 +275,9 @@ function destroy {
 }
 
 case $1 in
+  update-talos-extensions)
+    update-talos-extensions
+    ;;
   init)
     init
     ;;
