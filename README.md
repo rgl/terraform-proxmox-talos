@@ -63,7 +63,7 @@ Set your Proxmox details:
 
 ```bash
 # see https://registry.terraform.io/providers/bpg/proxmox/latest/docs#argument-reference
-# see https://github.com/bpg/terraform-provider-proxmox/blob/v0.62.0/proxmoxtf/provider/provider.go#L49-L56
+# see https://github.com/bpg/terraform-provider-proxmox/blob/v0.64.0/proxmoxtf/provider/provider.go#L49-L56
 cat >secrets-proxmox.sh <<EOF
 unset HTTPS_PROXY
 #export HTTPS_PROXY='http://localhost:8080'
