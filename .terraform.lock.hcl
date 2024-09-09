@@ -84,6 +84,16 @@ provider "registry.terraform.io/hashicorp/random" {
   ]
 }
 
+provider "registry.terraform.io/rgl/kustomizer" {
+  version     = "0.0.1"
+  constraints = "0.0.1"
+  hashes = [
+    "h1:AIMjOboe3bs3JqBmiRCkCGcLQAAGHIHkSK4PZOGC6/8=",
+    "zh:8c3800b21e806401e866aac1d1e22d3c029aed8d06f5b7c5f2c9fe0772466989",
+    "zh:9c2ad8a835341cf9e2efa4c7150d118eca09d4a8bfea303969f1e50aacc114e2",
+  ]
+}
+
 provider "registry.terraform.io/siderolabs/talos" {
   version     = "0.5.0"
   constraints = "0.5.0"

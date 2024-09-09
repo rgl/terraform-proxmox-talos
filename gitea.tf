@@ -1,10 +1,14 @@
 locals {
-  gitea_domain = "gitea.${var.ingress_domain}"
-  # TODO use a non-default namespace when the helm chart is correctly setting the
-  #      namespace in all the resources
-  #      see https://gitea.com/gitea/helm-chart/issues/630
-  gitea_namespace = "default"
+  gitea_domain    = "gitea.${var.ingress_domain}"
+  gitea_namespace = "gitea"
   gitea_manifests = [
+    {
+      apiVersion = "v1"
+      kind       = "Namespace"
+      metadata = {
+        name = local.gitea_namespace
+      }
+    },
     {
       apiVersion = "cert-manager.io/v1"
       kind       = "Certificate"
@@ -38,7 +42,7 @@ locals {
       }
     },
   ]
-  gitea_manifest = join("---\n", [for d in local.gitea_manifests : yamlencode(d)])
+  gitea_manifest = join("---\n", [data.kustomizer_manifest.gitea.manifest], [for d in local.gitea_manifests : yamlencode(d)])
 }
 
 # set the configuration.
@@ -132,4 +136,21 @@ data "helm_template" "gitea" {
       ]
     }
   })]
+}
+
+# NB we mainly use the Kustomization to set the gitea namespace (because the
+#    helm chart cannot do it).
+#    see https://gitea.com/gitea/helm-chart/issues/630
+# see https://registry.terraform.io/providers/rgl/kustomizer/latest/docs/data-sources/manifest
+data "kustomizer_manifest" "gitea" {
+  files = {
+    "kustomization.yaml"       = <<-EOF
+      apiVersion: kustomize.config.k8s.io/v1beta1
+      kind: Kustomization
+      namespace: ${yamlencode(local.gitea_namespace)}
+      resources:
+        - resources/resources.yaml
+    EOF
+    "resources/resources.yaml" = data.helm_template.gitea.manifest
+  }
 }

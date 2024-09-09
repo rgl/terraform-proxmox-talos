@@ -32,6 +32,12 @@ terraform {
       source  = "hashicorp/helm"
       version = "2.15.0"
     }
+    # see https://registry.terraform.io/providers/rgl/kustomizer
+    # see https://github.com/rgl/terraform-provider-kustomizer
+    kustomizer = {
+      source  = "rgl/kustomizer"
+      version = "0.0.1"
+    }
   }
 }
 
