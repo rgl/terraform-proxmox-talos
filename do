@@ -20,7 +20,7 @@ talos_spin_extension_tag="v0.15.0@sha256:0ec7613913960c95413699a46745a788d4c2277
 
 # see https://github.com/piraeusdatastore/piraeus-operator/releases
 # renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator
-piraeus_operator_version="2.5.2"
+piraeus_operator_version="2.6.0"
 
 export CHECKPOINT_DISABLE='1'
 export TF_LOG='DEBUG' # TRACE, DEBUG, INFO, WARN or ERROR.
@@ -142,12 +142,12 @@ function health {
 
 function piraeus-install {
   # see https://github.com/piraeusdatastore/piraeus-operator
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/how-to/talos.md
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/tutorial/get-started.md
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/tutorial/replicated-volumes.md
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/explanation/components.md
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/reference/linstorsatelliteconfiguration.md
-  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.5.2/docs/reference/linstorcluster.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.6.0/docs/how-to/talos.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.6.0/docs/tutorial/get-started.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.6.0/docs/tutorial/replicated-volumes.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.6.0/docs/explanation/components.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.6.0/docs/reference/linstorsatelliteconfiguration.md
+  # see https://github.com/piraeusdatastore/piraeus-operator/blob/v2.6.0/docs/reference/linstorcluster.md
   # see https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/
   # see https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#ch-kubernetes
   # see 5.7.1. Available Parameters in a Storage Class at https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-sc-parameters
