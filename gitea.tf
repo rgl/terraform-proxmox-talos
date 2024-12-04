@@ -47,7 +47,7 @@ locals {
 
 # set the configuration.
 # NB the default values are described at:
-#       https://gitea.com/gitea/helm-chart/src/tag/v10.4.0/values.yaml
+#       https://gitea.com/gitea/helm-chart/src/tag/v10.6.0/values.yaml
 #    NB make sure you are seeing the same version of the chart that you are installing.
 # see https://registry.terraform.io/providers/hashicorp/helm/latest/docs/data-sources/template
 data "helm_template" "gitea" {
@@ -57,7 +57,7 @@ data "helm_template" "gitea" {
   chart      = "gitea"
   # see https://artifacthub.io/packages/helm/gitea/gitea
   # renovate: datasource=helm depName=gitea registryUrl=https://dl.gitea.com/charts
-  version      = "10.4.0" # app version 1.22.1.
+  version      = "10.6.0" # app version 1.22.3.
   kube_version = var.kubernetes_version
   api_versions = [
     "networking.k8s.io/v1/Ingress",
