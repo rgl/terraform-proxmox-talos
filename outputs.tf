@@ -4,7 +4,7 @@ output "talosconfig" {
 }
 
 output "kubeconfig" {
-  value     = data.talos_cluster_kubeconfig.talos.kubeconfig_raw
+  value     = talos_cluster_kubeconfig.talos.kubeconfig_raw
   sensitive = true
 }
 
