@@ -1,7 +1,7 @@
 # see https://registry.terraform.io/providers/bpg/proxmox/0.64.0/docs/resources/virtual_environment_file
 resource "proxmox_virtual_environment_file" "talos" {
   datastore_id = "local"
-  node_name    = "pve"
+  node_name    = var.proxmox_pve_node_name
   content_type = "iso"
   source_file {
     path      = "tmp/talos/talos-${var.talos_version}.qcow2"
@@ -13,7 +13,7 @@ resource "proxmox_virtual_environment_file" "talos" {
 resource "proxmox_virtual_environment_vm" "controller" {
   count           = var.controller_count
   name            = "${var.prefix}-${local.controller_nodes[count.index].name}"
-  node_name       = "pve"
+  node_name       = var.proxmox_pve_node_name
   tags            = sort(["talos", "controller", "example", "terraform"])
   stop_on_destroy = true
   bios            = "ovmf"
@@ -71,7 +71,7 @@ resource "proxmox_virtual_environment_vm" "controller" {
 resource "proxmox_virtual_environment_vm" "worker" {
   count           = var.worker_count
   name            = "${var.prefix}-${local.worker_nodes[count.index].name}"
-  node_name       = "pve"
+  node_name       = var.proxmox_pve_node_name
   tags            = sort(["talos", "worker", "example", "terraform"])
   stop_on_destroy = true
   bios            = "ovmf"
