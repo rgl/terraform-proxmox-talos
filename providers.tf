@@ -36,7 +36,7 @@ terraform {
     # see https://github.com/rgl/terraform-provider-kustomizer
     kustomizer = {
       source  = "rgl/kustomizer"
-      version = "0.0.1"
+      version = "0.0.2"
     }
   }
 }

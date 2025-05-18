@@ -85,12 +85,12 @@ provider "registry.terraform.io/hashicorp/random" {
 }
 
 provider "registry.terraform.io/rgl/kustomizer" {
-  version     = "0.0.1"
-  constraints = "0.0.1"
+  version     = "0.0.2"
+  constraints = "0.0.2"
   hashes = [
-    "h1:AIMjOboe3bs3JqBmiRCkCGcLQAAGHIHkSK4PZOGC6/8=",
-    "zh:8c3800b21e806401e866aac1d1e22d3c029aed8d06f5b7c5f2c9fe0772466989",
-    "zh:9c2ad8a835341cf9e2efa4c7150d118eca09d4a8bfea303969f1e50aacc114e2",
+    "h1:ueLyLtw7B773SjX1RLY98l1Ph+IkEBj3UlEqwfBognU=",
+    "zh:742193ca9a0b3395253647062bddf90b522f55da8194c106ad5397411e8ca60a",
+    "zh:bcea589b08ddb79f58d2f7083e5037072fa8ea6ed27912a6afa12caef7a5e419",
   ]
 }
 
