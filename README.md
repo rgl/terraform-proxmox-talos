@@ -434,6 +434,9 @@ talosctl -n $c0 service etcd status
 talosctl -n $c0 etcd status
 talosctl -n $c0 etcd alarm list
 talosctl -n $c0 etcd members
+# NB talosctl get members requires the talos discovery service, which we disable
+#    by default, so this will not return anything.
+#    see talos.tf.
 talosctl -n $c0 get members
 talosctl -n $c0 health --control-plane-nodes $controllers --worker-nodes $workers
 talosctl -n $c0 inspect dependencies | dot -Tsvg >c0.svg && xdg-open c0.svg

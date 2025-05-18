@@ -48,13 +48,21 @@ locals {
       }
     }
     cluster = {
+      # disable kubernetes discovery as its no longer compatible with k8s 1.32+.
+      # NB we actually disable the discovery altogether, at the other discovery
+      #    mechanism, service discovery, requires the public discovery service
+      #    from https://discovery.talos.dev/ (or a custom and paid one running
+      #    locally in your network).
+      # NB without this, talosctl get members, always returns an empty set.
       # see https://www.talos.dev/v1.9/talos-guides/discovery/
-      # see https://www.talos.dev/v1.9/reference/configuration/#clusterdiscoveryconfig
+      # see https://www.talos.dev/v1.9/reference/configuration/v1alpha1/config/#Config.cluster.discovery
+      # see https://github.com/siderolabs/talos/issues/9980
+      # see https://github.com/siderolabs/talos/commit/c12b52491456d1e52204eb290d0686a317358c7c
       discovery = {
-        enabled = true
+        enabled = false
         registries = {
           kubernetes = {
-            disabled = false
+            disabled = true
           }
           service = {
             disabled = true
