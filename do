@@ -3,20 +3,20 @@ set -euo pipefail
 
 # see https://github.com/siderolabs/talos/releases
 # renovate: datasource=github-releases depName=siderolabs/talos
-talos_version="1.8.3"
+talos_version="1.9.6"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/qemu-guest-agent
 # see https://github.com/siderolabs/extensions/tree/main/guest-agents/qemu-guest-agent
-talos_qemu_guest_agent_extension_tag="9.1.0@sha256:cd8154036a0711f6f0a2ec9d6ce8539219d0e46a78e0eca22598d4d884f3f52c"
+talos_qemu_guest_agent_extension_tag="9.2.0@sha256:00359da7b382d4d802841c0d5c9e3e89410574d1edda3ac3f892b73c5cb6b795"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/drbd
 # see https://github.com/siderolabs/extensions/tree/main/storage/drbd
 # see https://github.com/LINBIT/drbd
-talos_drbd_extension_tag="9.2.11-v1.8.3@sha256:4fab47f31d7e7d1873cc17fc46225805a424234eac73e5ff61b22419b9a496fc"
+talos_drbd_extension_tag="9.2.13-v1.9.6@sha256:b04cb2b11626e2a30d8576c0deb3f307cb9e4e37653ee82bbc7fbd1eafbdb2a5"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/spin
 # see https://github.com/siderolabs/extensions/tree/main/container-runtime/spin
-talos_spin_extension_tag="v0.15.1@sha256:642488eadb94d4ddb30f9e65d8ed6836a4c00d699889e060019492308735af9b"
+talos_spin_extension_tag="v0.18.0@sha256:93045d3e1f13ddccf4e5cebdff35a00521d26c5166a346cfc5056d6ca3954092"
 
 # see https://github.com/piraeusdatastore/piraeus-operator/releases
 # renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator
@@ -59,9 +59,9 @@ function update-talos-extensions {
 }
 
 function build_talos_image {
-  # see https://www.talos.dev/v1.8/talos-guides/install/boot-assets/
-  # see https://www.talos.dev/v1.8/advanced/metal-network-configuration/
-  # see Profile type at https://github.com/siderolabs/talos/blob/v1.8.3/pkg/imager/profile/profile.go#L24-L47
+  # see https://www.talos.dev/v1.9/talos-guides/install/boot-assets/
+  # see https://www.talos.dev/v1.9/advanced/metal-network-configuration/
+  # see Profile type at https://github.com/siderolabs/talos/blob/v1.9.6/pkg/imager/profile/profile.go#L24-L47
   local talos_version_tag="v$talos_version"
   rm -rf tmp/talos
   mkdir -p tmp/talos
@@ -152,7 +152,7 @@ function piraeus-install {
   # see https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#ch-kubernetes
   # see 5.7.1. Available Parameters in a Storage Class at https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-sc-parameters
   # see https://linbit.com/drbd-user-guide/drbd-guide-9_0-en/
-  # see https://www.talos.dev/v1.8/kubernetes-guides/configuration/storage/#piraeus--linstor
+  # see https://www.talos.dev/v1.9/kubernetes-guides/configuration/storage/#piraeus--linstor
   step 'piraeus install'
   kubectl apply --server-side -k "https://github.com/piraeusdatastore/piraeus-operator//config/default?ref=v$piraeus_operator_version"
   step 'piraeus wait'
