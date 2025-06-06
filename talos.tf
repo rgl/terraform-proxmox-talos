@@ -18,7 +18,7 @@ locals {
       #    talos image, which is created in the installed state.
       #install = {}
       features = {
-        # see https://www.talos.dev/v1.9/kubernetes-guides/configuration/kubeprism/
+        # see https://www.talos.dev/v1.10/kubernetes-guides/configuration/kubeprism/
         # see talosctl -n $c0 read /etc/kubernetes/kubeconfig-kubelet | yq .clusters[].cluster.server
         # NB if you use a non-default CNI, you must configure it to use the
         #    https://localhost:7445 kube-apiserver endpoint.
@@ -26,7 +26,7 @@ locals {
           enabled = true
           port    = 7445
         }
-        # see https://www.talos.dev/v1.9/talos-guides/network/host-dns/
+        # see https://www.talos.dev/v1.10/talos-guides/network/host-dns/
         hostDNS = {
           enabled              = true
           forwardKubeDNSToHost = true
@@ -54,8 +54,8 @@ locals {
       #    from https://discovery.talos.dev/ (or a custom and paid one running
       #    locally in your network).
       # NB without this, talosctl get members, always returns an empty set.
-      # see https://www.talos.dev/v1.9/talos-guides/discovery/
-      # see https://www.talos.dev/v1.9/reference/configuration/v1alpha1/config/#Config.cluster.discovery
+      # see https://www.talos.dev/v1.10/talos-guides/discovery/
+      # see https://www.talos.dev/v1.10/reference/configuration/v1alpha1/config/#Config.cluster.discovery
       # see https://github.com/siderolabs/talos/issues/9980
       # see https://github.com/siderolabs/talos/commit/c12b52491456d1e52204eb290d0686a317358c7c
       discovery = {
@@ -102,7 +102,7 @@ data "talos_machine_configuration" "controller" {
       machine = {
         network = {
           interfaces = [
-            # see https://www.talos.dev/v1.9/talos-guides/network/vip/
+            # see https://www.talos.dev/v1.10/talos-guides/network/vip/
             {
               interface = "eth0"
               vip = {
