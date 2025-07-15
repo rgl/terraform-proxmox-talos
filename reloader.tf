@@ -19,8 +19,10 @@ data "helm_template" "reloader" {
   version      = "2.1.3"
   kube_version = var.kubernetes_version
   api_versions = []
-  set {
-    name  = "reloader.autoReloadAll"
-    value = "false"
-  }
+  set = [
+    {
+      name  = "reloader.autoReloadAll"
+      value = "false"
+    }
+  ]
 }

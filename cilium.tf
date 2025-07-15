@@ -61,72 +61,74 @@ data "helm_template" "cilium" {
   version      = "1.17.4"
   kube_version = var.kubernetes_version
   api_versions = []
-  set {
-    name  = "ipam.mode"
-    value = "kubernetes"
-  }
-  set {
-    name  = "securityContext.capabilities.ciliumAgent"
-    value = "{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}"
-  }
-  set {
-    name  = "securityContext.capabilities.cleanCiliumState"
-    value = "{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}"
-  }
-  set {
-    name  = "cgroup.autoMount.enabled"
-    value = "false"
-  }
-  set {
-    name  = "cgroup.hostRoot"
-    value = "/sys/fs/cgroup"
-  }
-  set {
-    name  = "k8sServiceHost"
-    value = "localhost"
-  }
-  set {
-    name  = "k8sServicePort"
-    value = local.common_machine_config.machine.features.kubePrism.port
-  }
-  set {
-    name  = "kubeProxyReplacement"
-    value = "true"
-  }
-  set {
-    name  = "l2announcements.enabled"
-    value = "true"
-  }
-  set {
-    name  = "devices"
-    value = "{eth0}"
-  }
-  set {
-    name  = "ingressController.enabled"
-    value = "true"
-  }
-  set {
-    name  = "ingressController.default"
-    value = "true"
-  }
-  set {
-    name  = "ingressController.loadbalancerMode"
-    value = "shared"
-  }
-  set {
-    name  = "ingressController.enforceHttps"
-    value = "false"
-  }
-  set {
-    name  = "envoy.enabled"
-    value = "true"
-  }
-  set {
-    name  = "hubble.relay.enabled"
-    value = "true"
-  }
-  set {
-    name  = "hubble.ui.enabled"
-    value = "true"
-  }
+  set = [
+    {
+      name  = "ipam.mode"
+      value = "kubernetes"
+    },
+    {
+      name  = "securityContext.capabilities.ciliumAgent"
+      value = "{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}"
+    },
+    {
+      name  = "securityContext.capabilities.cleanCiliumState"
+      value = "{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}"
+    },
+    {
+      name  = "cgroup.autoMount.enabled"
+      value = "false"
+    },
+    {
+      name  = "cgroup.hostRoot"
+      value = "/sys/fs/cgroup"
+    },
+    {
+      name  = "k8sServiceHost"
+      value = "localhost"
+    },
+    {
+      name  = "k8sServicePort"
+      value = local.common_machine_config.machine.features.kubePrism.port
+    },
+    {
+      name  = "kubeProxyReplacement"
+      value = "true"
+    },
+    {
+      name  = "l2announcements.enabled"
+      value = "true"
+    },
+    {
+      name  = "devices"
+      value = "{eth0}"
+    },
+    {
+      name  = "ingressController.enabled"
+      value = "true"
+    },
+    {
+      name  = "ingressController.default"
+      value = "true"
+    },
+    {
+      name  = "ingressController.loadbalancerMode"
+      value = "shared"
+    },
+    {
+      name  = "ingressController.enforceHttps"
+      value = "false"
+    },
+    {
+      name  = "envoy.enabled"
+      value = "true"
+    },
+    {
+      name  = "hubble.relay.enabled"
+      value = "true"
+    },
+    {
+      name  = "hubble.ui.enabled"
+      value = "true"
+    },
+  ]
 }

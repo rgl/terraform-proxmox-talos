@@ -78,8 +78,10 @@ data "helm_template" "cert_manager" {
   api_versions = []
   # NB installCRDs is generally not recommended, BUT since this
   #    is a development cluster we YOLO it.
-  set {
-    name  = "installCRDs"
-    value = "true"
-  }
+  set = [
+    {
+      name  = "installCRDs"
+      value = "true"
+    }
+  ]
 }

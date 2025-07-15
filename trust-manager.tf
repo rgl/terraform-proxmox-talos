@@ -16,12 +16,14 @@ data "helm_template" "trust_manager" {
   version      = "0.17.1"
   kube_version = var.kubernetes_version
   api_versions = []
-  set {
-    name  = "secretTargets.enabled"
-    value = "true"
-  }
-  set {
-    name  = "secretTargets.authorizedSecretsAll"
-    value = "true"
-  }
+  set = [
+    {
+      name  = "secretTargets.enabled"
+      value = "true"
+    },
+    {
+      name  = "secretTargets.authorizedSecretsAll"
+      value = "true"
+    },
+  ]
 }

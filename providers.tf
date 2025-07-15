@@ -30,7 +30,7 @@ terraform {
     # see https://github.com/hashicorp/terraform-provider-helm
     helm = {
       source  = "hashicorp/helm"
-      version = "2.17.0"
+      version = "3.0.2"
     }
     # see https://registry.terraform.io/providers/rgl/kustomizer
     # see https://github.com/rgl/terraform-provider-kustomizer
