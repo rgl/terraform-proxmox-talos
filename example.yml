@@ -78,7 +78,7 @@ spec:
                 resourceFieldRef:
                   resource: limits.cpu
             # see https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/
-            # see https://github.com/kubernetes/kubernetes/blob/v1.33.2/test/e2e/common/node/downwardapi.go
+            # see https://github.com/kubernetes/kubernetes/blob/v1.33.3/test/e2e/common/node/downwardapi.go
             - name: EXAMPLE_NODE_NAME
               valueFrom:
                 fieldRef:
