@@ -3,16 +3,16 @@ set -euo pipefail
 
 # see https://github.com/siderolabs/talos/releases
 # renovate: datasource=github-releases depName=siderolabs/talos
-talos_version="1.10.6"
+talos_version="1.10.7"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/qemu-guest-agent
 # see https://github.com/siderolabs/extensions/tree/main/guest-agents/qemu-guest-agent
-talos_qemu_guest_agent_extension_tag="10.0.2@sha256:0d16cd4f8cefab33f091e336bc666943a71355ee010d0dfa0e46498693af1c52"
+talos_qemu_guest_agent_extension_tag="10.0.2@sha256:ce20e4459b26623e9dddba1be10097746b519c587614685bc4330aceee107c74"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/drbd
 # see https://github.com/siderolabs/extensions/tree/main/storage/drbd
 # see https://github.com/LINBIT/drbd
-talos_drbd_extension_tag="9.2.14-v1.10.6@sha256:ca7fba878c5acb8fdfe130a39472a6c0a5c9dd74d65ba7507c09780a873b29c7"
+talos_drbd_extension_tag="9.2.14-v1.10.7@sha256:1c54ef1d97d5eacb3de749aac198d5313cc3513ca348e994c6c080a3bf2440eb"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/spin
 # see https://github.com/siderolabs/extensions/tree/main/container-runtime/spin
@@ -61,7 +61,7 @@ function update-talos-extensions {
 function build_talos_image {
   # see https://www.talos.dev/v1.10/talos-guides/install/boot-assets/
   # see https://www.talos.dev/v1.10/advanced/metal-network-configuration/
-  # see Profile type at https://github.com/siderolabs/talos/blob/v1.10.6/pkg/imager/profile/profile.go#L23-L46
+  # see Profile type at https://github.com/siderolabs/talos/blob/v1.10.7/pkg/imager/profile/profile.go#L23-L46
   local talos_version_tag="v$talos_version"
   rm -rf tmp/talos
   mkdir -p tmp/talos

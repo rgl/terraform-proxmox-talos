@@ -12,7 +12,7 @@ variable "proxmox_pve_node_address" {
 variable "talos_version" {
   type = string
   # renovate: datasource=github-releases depName=siderolabs/talos
-  default = "1.10.6"
+  default = "1.10.7"
   validation {
     condition     = can(regex("^\\d+(\\.\\d+)+", var.talos_version))
     error_message = "Must be a version number."
