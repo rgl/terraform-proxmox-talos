@@ -3,20 +3,20 @@ set -euo pipefail
 
 # see https://github.com/siderolabs/talos/releases
 # renovate: datasource=github-releases depName=siderolabs/talos
-talos_version="1.10.7"
+talos_version="1.11.1"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/qemu-guest-agent
 # see https://github.com/siderolabs/extensions/tree/main/guest-agents/qemu-guest-agent
-talos_qemu_guest_agent_extension_tag="10.0.2@sha256:ce20e4459b26623e9dddba1be10097746b519c587614685bc4330aceee107c74"
+talos_qemu_guest_agent_extension_tag="10.0.2@sha256:84b42d779721ddab71e0d5c12e10399d6bdd03af0aaa0dafd240e2724d724675"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/drbd
 # see https://github.com/siderolabs/extensions/tree/main/storage/drbd
 # see https://github.com/LINBIT/drbd
-talos_drbd_extension_tag="9.2.14-v1.10.7@sha256:1c54ef1d97d5eacb3de749aac198d5313cc3513ca348e994c6c080a3bf2440eb"
+talos_drbd_extension_tag="9.2.14-v1.11.1@sha256:004b24fc5d3d41369a7f016d10e894436293d8478debfa769e204522e7cc0925"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/spin
 # see https://github.com/siderolabs/extensions/tree/main/container-runtime/spin
-talos_spin_extension_tag="v0.19.0@sha256:c88e8b1a6de4acd8d98f6aacc716c8e9aef3f7962d04893b49afc77d013b8ba2"
+talos_spin_extension_tag="v0.20.0@sha256:ec5cd8479e9174105aac93bbda2b6ab3d7be91167e7dc13a1884246fd4efa315"
 
 # see https://github.com/piraeusdatastore/piraeus-operator/releases
 # renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator
@@ -59,9 +59,9 @@ function update-talos-extensions {
 }
 
 function build_talos_image {
-  # see https://www.talos.dev/v1.10/talos-guides/install/boot-assets/
-  # see https://www.talos.dev/v1.10/advanced/metal-network-configuration/
-  # see Profile type at https://github.com/siderolabs/talos/blob/v1.10.7/pkg/imager/profile/profile.go#L23-L46
+  # see https://www.talos.dev/v1.11/talos-guides/install/boot-assets/
+  # see https://www.talos.dev/v1.11/advanced/metal-network-configuration/
+  # see Profile type at https://github.com/siderolabs/talos/blob/v1.11.1/pkg/imager/profile/profile.go#L23-L46
   local talos_version_tag="v$talos_version"
   rm -rf tmp/talos
   mkdir -p tmp/talos
@@ -152,11 +152,36 @@ function piraeus-install {
   # see https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#ch-kubernetes
   # see 5.7.1. Available Parameters in a Storage Class at https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-sc-parameters
   # see https://linbit.com/drbd-user-guide/drbd-guide-9_0-en/
-  # see https://www.talos.dev/v1.10/kubernetes-guides/configuration/storage/#piraeus--linstor
+  # see https://www.talos.dev/v1.11/kubernetes-guides/configuration/storage/#piraeus--linstor
   step 'piraeus install'
   kubectl apply --server-side -k "https://github.com/piraeusdatastore/piraeus-operator//config/default?ref=v$piraeus_operator_version"
   step 'piraeus wait'
   kubectl wait pod --timeout=15m --for=condition=Ready -n piraeus-datastore -l app.kubernetes.io/component=piraeus-operator
+  # wait until the webhook endpoint is available.
+  # NB this is required to workaround:
+  #   Error from server (InternalError): error when creating "STDIN": Internal error occurred: failed calling webhook "vlinstorsatelliteconfiguration.kb.io": failed to call webhook: Post "https://piraeus-operator-webhook-service.piraeus-datastore.svc:443/validate-piraeus-io-v1-linstorsatelliteconfiguration?timeout=10s": dial tcp 10.97.116.20:443: connect: operation not permitted
+  while [ \
+    "$(
+      kubectl \
+      run \
+      test-piraeus-webhook \
+      --namespace piraeus-datastore \
+      --restart Never \
+      --rm \
+      --wait \
+      --stdin \
+      --tty \
+      --image alpine/curl:8.14.1 \
+      -- \
+      curl \
+        --insecure \
+        --silent \
+        --fail-with-body \
+        --header content-type:application/json \
+        https://piraeus-operator-webhook-service.piraeus-datastore:443/validate-piraeus-io-v1-linstorsatelliteconfiguration?timeout=5s \
+        | head -1 | jq .response.status.code
+    )" != "400" \
+  ]; do sleep 5; done
   step 'piraeus configure'
   kubectl apply -n piraeus-datastore -f - <<'EOF'
 apiVersion: piraeus.io/v1
