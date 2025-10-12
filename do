@@ -3,20 +3,20 @@ set -euo pipefail
 
 # see https://github.com/siderolabs/talos/releases
 # renovate: datasource=github-releases depName=siderolabs/talos
-talos_version="1.11.1"
+talos_version="1.11.2"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/qemu-guest-agent
 # see https://github.com/siderolabs/extensions/tree/main/guest-agents/qemu-guest-agent
-talos_qemu_guest_agent_extension_tag="10.0.2@sha256:84b42d779721ddab71e0d5c12e10399d6bdd03af0aaa0dafd240e2724d724675"
+talos_qemu_guest_agent_extension_tag="10.0.2@sha256:9720300de00544eca155bc19369dfd7789d39a0e23d72837a7188f199e13dc6c"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/drbd
 # see https://github.com/siderolabs/extensions/tree/main/storage/drbd
 # see https://github.com/LINBIT/drbd
-talos_drbd_extension_tag="9.2.14-v1.11.1@sha256:004b24fc5d3d41369a7f016d10e894436293d8478debfa769e204522e7cc0925"
+talos_drbd_extension_tag="9.2.14-v1.11.2@sha256:4e8a32cbff6d96c6a61e523636f7c11f5a72984097e3e4a68f9f5354ac070b99"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/spin
 # see https://github.com/siderolabs/extensions/tree/main/container-runtime/spin
-talos_spin_extension_tag="v0.20.0@sha256:ec5cd8479e9174105aac93bbda2b6ab3d7be91167e7dc13a1884246fd4efa315"
+talos_spin_extension_tag="v0.21.0@sha256:b405524de2a2826b22354962d48688237ff4f5f7cf79f80c27d08f057c51b505"
 
 # see https://github.com/piraeusdatastore/piraeus-operator/releases
 # renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator
@@ -61,7 +61,7 @@ function update-talos-extensions {
 function build_talos_image {
   # see https://www.talos.dev/v1.11/talos-guides/install/boot-assets/
   # see https://www.talos.dev/v1.11/advanced/metal-network-configuration/
-  # see Profile type at https://github.com/siderolabs/talos/blob/v1.11.1/pkg/imager/profile/profile.go#L23-L46
+  # see Profile type at https://github.com/siderolabs/talos/blob/v1.11.2/pkg/imager/profile/profile.go#L23-L46
   local talos_version_tag="v$talos_version"
   rm -rf tmp/talos
   mkdir -p tmp/talos
