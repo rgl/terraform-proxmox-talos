@@ -1,6 +1,6 @@
 ---
 # see https://kubernetes.io/docs/concepts/services-networking/ingress/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#ingress-v1-networking-k8s-io
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#ingress-v1-networking-k8s-io
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -19,8 +19,8 @@ spec:
                   name: web
 ---
 # see https://kubernetes.io/docs/concepts/services-networking/service/#type-clusterip
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#service-v1-core
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#serviceport-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#service-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#serviceport-v1-core
 apiVersion: v1
 kind: Service
 metadata:
@@ -36,9 +36,9 @@ spec:
       targetPort: web
 ---
 # see https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#deployment-v1-apps
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#podtemplatespec-v1-core
-# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#container-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#deployment-v1-apps
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#podtemplatespec-v1-core
+# see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#container-v1-core
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -78,7 +78,7 @@ spec:
                 resourceFieldRef:
                   resource: limits.cpu
             # see https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/
-            # see https://github.com/kubernetes/kubernetes/blob/v1.33.6/test/e2e/common/node/downwardapi.go
+            # see https://github.com/kubernetes/kubernetes/blob/v1.34.2/test/e2e/common/node/downwardapi.go
             - name: EXAMPLE_NODE_NAME
               valueFrom:
                 fieldRef:
