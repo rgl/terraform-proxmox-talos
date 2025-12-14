@@ -1,6 +1,6 @@
 # install trust-manager.
 # NB the default values are described at:
-#       https://github.com/cert-manager/trust-manager/blob/v0.20.2/deploy/charts/trust-manager/values.yaml
+#       https://github.com/cert-manager/trust-manager/blob/v0.20.3/deploy/charts/trust-manager/values.yaml
 #    NB make sure you are seeing the same version of the chart that you are installing.
 # see https://cert-manager.io/docs/tutorials/getting-started-with-trust-manager/
 # see https://github.com/cert-manager/trust-manager
@@ -13,7 +13,7 @@ data "helm_template" "trust_manager" {
   repository = "https://charts.jetstack.io"
   chart      = "trust-manager"
   # renovate: datasource=helm depName=trust-manager registryUrl=https://charts.jetstack.io
-  version      = "0.20.2"
+  version      = "0.20.3"
   kube_version = var.kubernetes_version
   api_versions = []
   set = [
