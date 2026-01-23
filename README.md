@@ -10,7 +10,7 @@ An example [Talos Linux](https://www.talos.dev) Kubernetes cluster in Proxmox QE
 
 The [spin extension](https://github.com/siderolabs/extensions/tree/main/container-runtime/spin), which installs [containerd-shim-spin](https://github.com/spinkube/containerd-shim-spin), is used to provide the ability to run [Spin Applications](https://developer.fermyon.com/spin/v2/index) ([WebAssembly/Wasm](https://webassembly.org/)).
 
-# Usage (Ubuntu 22.04 host)
+# Usage (Ubuntu 24.04 host)
 
 Install terraform:
 
