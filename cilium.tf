@@ -44,7 +44,7 @@ locals {
   cilium_external_lb_manifest = join("---\n", [for d in local.cilium_external_lb_manifests : yamlencode(d)])
 }
 
-// see https://www.talos.dev/v1.11/kubernetes-guides/network/deploying-cilium/#method-4-helm-manifests-inline-install
+// see https://docs.siderolabs.com/kubernetes-guides/cni/deploying-cilium#method-4%3A-helm-manifests-inline-install
 // see https://docs.cilium.io/en/stable/network/servicemesh/ingress/
 // see https://docs.cilium.io/en/stable/gettingstarted/hubble_setup/
 // see https://docs.cilium.io/en/stable/gettingstarted/hubble/
@@ -88,7 +88,7 @@ data "helm_template" "cilium" {
     },
     {
       name  = "k8sServicePort"
-      value = local.common_machine_config.machine.features.kubePrism.port
+      value = local.kube_prism_port
     },
     {
       name  = "kubeProxyReplacement"

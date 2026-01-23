@@ -11,82 +11,85 @@ locals {
       address = cidrhost(var.cluster_node_network, var.cluster_node_network_first_worker_hostnum + i)
     }
   ]
-  common_machine_config = {
-    machine = {
-      # NB the install section changes are only applied after a talos upgrade
-      #    (which we do not do). instead, its preferred to create a custom
-      #    talos image, which is created in the installed state.
-      #install = {}
-      features = {
-        # see https://www.talos.dev/v1.11/kubernetes-guides/configuration/kubeprism/
-        # see talosctl -n $c0 read /etc/kubernetes/kubeconfig-kubelet | yq .clusters[].cluster.server
-        # NB if you use a non-default CNI, you must configure it to use the
-        #    https://localhost:7445 kube-apiserver endpoint.
-        kubePrism = {
-          enabled = true
-          port    = 7445
-        }
-        # see https://www.talos.dev/v1.11/talos-guides/network/host-dns/
-        hostDNS = {
-          enabled              = true
-          forwardKubeDNSToHost = true
-        }
-      }
-      kernel = {
-        modules = [
-          // piraeus dependencies.
-          {
-            name = "drbd"
-            parameters = [
-              "usermode_helper=disabled",
-            ]
-          },
-          {
-            name = "drbd_transport_tcp"
-          },
-        ]
-      }
-    }
-    cluster = {
-      # disable kubernetes discovery as its no longer compatible with k8s 1.32+.
-      # NB we actually disable the discovery altogether, at the other discovery
-      #    mechanism, service discovery, requires the public discovery service
-      #    from https://discovery.talos.dev/ (or a custom and paid one running
-      #    locally in your network).
-      # NB without this, talosctl get members, always returns an empty set.
-      # see https://www.talos.dev/v1.11/talos-guides/discovery/
-      # see https://www.talos.dev/v1.11/reference/configuration/v1alpha1/config/#Config.cluster.discovery
-      # see https://github.com/siderolabs/talos/issues/9980
-      # see https://github.com/siderolabs/talos/commit/c12b52491456d1e52204eb290d0686a317358c7c
-      discovery = {
-        enabled = false
-        registries = {
-          kubernetes = {
-            disabled = true
+  kube_prism_port = 7445
+  common_machine_configs = [
+    {
+      machine = {
+        # NB the install section changes are only applied after a talos upgrade
+        #    (which we do not do). instead, its preferred to create a custom
+        #    talos image, which is created in the installed state.
+        #install = {}
+        features = {
+          # see https://docs.siderolabs.com/kubernetes-guides/advanced-guides/kubeprism
+          # see talosctl -n $c0 read /etc/kubernetes/kubeconfig-kubelet | yq .clusters[].cluster.server
+          # NB if you use a non-default CNI, you must configure it to use the
+          #    https://localhost:7445 kube-apiserver endpoint.
+          kubePrism = {
+            enabled = true
+            port    = local.kube_prism_port
           }
-          service = {
-            disabled = true
+          # see https://docs.siderolabs.com/talos/v1.12/networking/host-dns
+          hostDNS = {
+            enabled              = true
+            forwardKubeDNSToHost = true
           }
         }
-      }
-      network = {
-        cni = {
-          name = "none"
+        kernel = {
+          modules = [
+            // piraeus dependencies.
+            {
+              name = "drbd"
+              parameters = [
+                "usermode_helper=disabled",
+              ]
+            },
+            {
+              name = "drbd_transport_tcp"
+            },
+          ]
         }
       }
-      proxy = {
-        disabled = true
+      cluster = {
+        # disable kubernetes discovery as its no longer compatible with k8s 1.32+.
+        # NB we actually disable the discovery altogether, at the other discovery
+        #    mechanism, service discovery, requires the public discovery service
+        #    from https://discovery.talos.dev/ (or a custom and paid one running
+        #    locally in your network).
+        # NB without this, talosctl get members, always returns an empty set.
+        # see https://docs.siderolabs.com/talos/v1.12/configure-your-talos-cluster/system-configuration/discovery
+        # see https://docs.siderolabs.com/talos/v1.12/reference/configuration/v1alpha1/config#discovery
+        # see https://github.com/siderolabs/talos/issues/9980
+        # see https://github.com/siderolabs/talos/commit/c12b52491456d1e52204eb290d0686a317358c7c
+        discovery = {
+          enabled = false
+          registries = {
+            kubernetes = {
+              disabled = true
+            }
+            service = {
+              disabled = true
+            }
+          }
+        }
+        network = {
+          cni = {
+            name = "none"
+          }
+        }
+        proxy = {
+          disabled = true
+        }
       }
-    }
-  }
+    },
+  ]
 }
 
-// see https://registry.terraform.io/providers/siderolabs/talos/0.9.0/docs/resources/machine_secrets
+// see https://registry.terraform.io/providers/siderolabs/talos/0.10.1/docs/resources/machine_secrets
 resource "talos_machine_secrets" "talos" {
   talos_version = "v${var.talos_version}"
 }
 
-// see https://registry.terraform.io/providers/siderolabs/talos/0.9.0/docs/data-sources/machine_configuration
+// see https://registry.terraform.io/providers/siderolabs/talos/0.10.1/docs/data-sources/machine_configuration
 data "talos_machine_configuration" "controller" {
   cluster_name       = var.cluster_name
   cluster_endpoint   = var.cluster_endpoint
@@ -96,90 +99,84 @@ data "talos_machine_configuration" "controller" {
   kubernetes_version = var.kubernetes_version
   examples           = false
   docs               = false
-  config_patches = [
-    yamlencode(local.common_machine_config),
-    yamlencode({
-      machine = {
-        network = {
-          interfaces = [
-            # see https://www.talos.dev/v1.11/talos-guides/network/vip/
+  config_patches = concat(
+    [for c in local.common_machine_configs : yamlencode(c)],
+    [
+      // see https://docs.siderolabs.com/talos/v1.12/networking/advanced/vip
+      // see https://docs.siderolabs.com/talos/v1.12/reference/configuration/network/layer2vipconfig
+      yamlencode({
+        apiVersion = "v1alpha1"
+        kind       = "Layer2VIPConfig"
+        link       = "eth0"
+        name       = var.cluster_vip
+      }),
+      yamlencode({
+        cluster = {
+          inlineManifests = [
             {
-              interface = "eth0"
-              vip = {
-                ip = var.cluster_vip
-              }
-            }
-          ]
-        }
-      }
-    }),
-    yamlencode({
-      cluster = {
-        inlineManifests = [
-          {
-            name     = "spin"
-            contents = <<-EOF
-            apiVersion: node.k8s.io/v1
-            kind: RuntimeClass
-            metadata:
-              name: wasmtime-spin-v2
-            handler: spin
-            EOF
-          },
-          {
-            name = "cilium"
-            contents = join("---\n", [
-              data.helm_template.cilium.manifest,
-              "# Source cilium.tf\n${local.cilium_external_lb_manifest}",
-            ])
-          },
-          {
-            name = "cert-manager"
-            contents = join("---\n", [
-              yamlencode({
-                apiVersion = "v1"
-                kind       = "Namespace"
-                metadata = {
-                  name = "cert-manager"
-                }
-              }),
-              data.helm_template.cert_manager.manifest,
-              "# Source cert-manager.tf\n${local.cert_manager_ingress_ca_manifest}",
-            ])
-          },
-          {
-            name     = "trust-manager"
-            contents = data.helm_template.trust_manager.manifest
-          },
-          {
-            name     = "reloader"
-            contents = data.helm_template.reloader.manifest
-          },
-          {
-            name     = "gitea"
-            contents = local.gitea_manifest
-          },
-          {
-            name = "argocd"
-            contents = join("---\n", [
-              yamlencode({
-                apiVersion = "v1"
-                kind       = "Namespace"
-                metadata = {
-                  name = local.argocd_namespace
-                }
-              }),
-              data.helm_template.argocd.manifest,
-              "# Source argocd.tf\n${local.argocd_manifest}",
-            ])
-          },
-        ],
-      },
-    }),
-  ]
+              name     = "spin"
+              contents = <<-EOF
+                apiVersion: node.k8s.io/v1
+                kind: RuntimeClass
+                metadata:
+                  name: wasmtime-spin-v2
+                handler: spin
+                EOF
+            },
+            {
+              name = "cilium"
+              contents = join("---\n", [
+                data.helm_template.cilium.manifest,
+                "# Source cilium.tf\n${local.cilium_external_lb_manifest}",
+              ])
+            },
+            {
+              name = "cert-manager"
+              contents = join("---\n", [
+                yamlencode({
+                  apiVersion = "v1"
+                  kind       = "Namespace"
+                  metadata = {
+                    name = "cert-manager"
+                  }
+                }),
+                data.helm_template.cert_manager.manifest,
+                "# Source cert-manager.tf\n${local.cert_manager_ingress_ca_manifest}",
+              ])
+            },
+            {
+              name     = "trust-manager"
+              contents = data.helm_template.trust_manager.manifest
+            },
+            {
+              name     = "reloader"
+              contents = data.helm_template.reloader.manifest
+            },
+            {
+              name     = "gitea"
+              contents = local.gitea_manifest
+            },
+            {
+              name = "argocd"
+              contents = join("---\n", [
+                yamlencode({
+                  apiVersion = "v1"
+                  kind       = "Namespace"
+                  metadata = {
+                    name = local.argocd_namespace
+                  }
+                }),
+                data.helm_template.argocd.manifest,
+                "# Source argocd.tf\n${local.argocd_manifest}",
+              ])
+            },
+          ],
+        },
+    })],
+  )
 }
 
-// see https://registry.terraform.io/providers/siderolabs/talos/0.9.0/docs/data-sources/machine_configuration
+// see https://registry.terraform.io/providers/siderolabs/talos/0.10.1/docs/data-sources/machine_configuration
 data "talos_machine_configuration" "worker" {
   cluster_name       = var.cluster_name
   cluster_endpoint   = var.cluster_endpoint
@@ -189,19 +186,17 @@ data "talos_machine_configuration" "worker" {
   kubernetes_version = var.kubernetes_version
   examples           = false
   docs               = false
-  config_patches = [
-    yamlencode(local.common_machine_config),
-  ]
+  config_patches     = [for c in local.common_machine_configs : yamlencode(c)]
 }
 
-// see https://registry.terraform.io/providers/siderolabs/talos/0.9.0/docs/data-sources/client_configuration
+// see https://registry.terraform.io/providers/siderolabs/talos/0.10.1/docs/data-sources/client_configuration
 data "talos_client_configuration" "talos" {
   cluster_name         = var.cluster_name
   client_configuration = talos_machine_secrets.talos.client_configuration
   endpoints            = [for node in local.controller_nodes : node.address]
 }
 
-// see https://registry.terraform.io/providers/siderolabs/talos/0.9.0/docs/resources/cluster_kubeconfig
+// see https://registry.terraform.io/providers/siderolabs/talos/0.10.1/docs/resources/cluster_kubeconfig
 resource "talos_cluster_kubeconfig" "talos" {
   client_configuration = talos_machine_secrets.talos.client_configuration
   endpoint             = local.controller_nodes[0].address
@@ -211,7 +206,7 @@ resource "talos_cluster_kubeconfig" "talos" {
   ]
 }
 
-// see https://registry.terraform.io/providers/siderolabs/talos/0.9.0/docs/resources/machine_configuration_apply
+// see https://registry.terraform.io/providers/siderolabs/talos/0.10.1/docs/resources/machine_configuration_apply
 resource "talos_machine_configuration_apply" "controller" {
   count                       = var.controller_count
   client_configuration        = talos_machine_secrets.talos.client_configuration
@@ -219,12 +214,12 @@ resource "talos_machine_configuration_apply" "controller" {
   endpoint                    = local.controller_nodes[count.index].address
   node                        = local.controller_nodes[count.index].address
   config_patches = [
+    # see https://docs.siderolabs.com/talos/v1.12/reference/configuration/network/hostnameconfig
     yamlencode({
-      machine = {
-        network = {
-          hostname = local.controller_nodes[count.index].name
-        }
-      }
+      apiVersion = "v1alpha1"
+      kind       = "HostnameConfig"
+      auto       = "off"
+      hostname   = local.controller_nodes[count.index].name
     }),
   ]
   depends_on = [
@@ -232,7 +227,7 @@ resource "talos_machine_configuration_apply" "controller" {
   ]
 }
 
-// see https://registry.terraform.io/providers/siderolabs/talos/0.9.0/docs/resources/machine_configuration_apply
+// see https://registry.terraform.io/providers/siderolabs/talos/0.10.1/docs/resources/machine_configuration_apply
 resource "talos_machine_configuration_apply" "worker" {
   count                       = var.worker_count
   client_configuration        = talos_machine_secrets.talos.client_configuration
@@ -240,12 +235,12 @@ resource "talos_machine_configuration_apply" "worker" {
   endpoint                    = local.worker_nodes[count.index].address
   node                        = local.worker_nodes[count.index].address
   config_patches = [
+    # see https://docs.siderolabs.com/talos/v1.12/reference/configuration/network/hostnameconfig
     yamlencode({
-      machine = {
-        network = {
-          hostname = local.worker_nodes[count.index].name
-        }
-      }
+      apiVersion = "v1alpha1"
+      kind       = "HostnameConfig"
+      auto       = "off"
+      hostname   = local.worker_nodes[count.index].name
     }),
   ]
   depends_on = [
@@ -253,7 +248,7 @@ resource "talos_machine_configuration_apply" "worker" {
   ]
 }
 
-// see https://registry.terraform.io/providers/siderolabs/talos/0.9.0/docs/resources/machine_bootstrap
+// see https://registry.terraform.io/providers/siderolabs/talos/0.10.1/docs/resources/machine_bootstrap
 resource "talos_machine_bootstrap" "talos" {
   client_configuration = talos_machine_secrets.talos.client_configuration
   endpoint             = local.controller_nodes[0].address

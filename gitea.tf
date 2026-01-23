@@ -150,7 +150,7 @@ data "kustomizer_manifest" "gitea" {
       namespace: ${yamlencode(local.gitea_namespace)}
       resources:
         - resources/resources.yaml
-    EOF
+      EOF
     "resources/resources.yaml" = data.helm_template.gitea.manifest
   }
 }

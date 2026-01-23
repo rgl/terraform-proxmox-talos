@@ -3,20 +3,20 @@ set -euo pipefail
 
 # see https://github.com/siderolabs/talos/releases
 # renovate: datasource=github-releases depName=siderolabs/talos
-talos_version="1.11.6"
+talos_version="1.12.1"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/qemu-guest-agent
 # see https://github.com/siderolabs/extensions/tree/main/guest-agents/qemu-guest-agent
-talos_qemu_guest_agent_extension_tag="10.0.2@sha256:17069ece34171696f6a693da347069fcf3bef44235133c317e22cc0118b2550f"
+talos_qemu_guest_agent_extension_tag="10.2.0@sha256:b2843f69e3cd31ba813c1164f290ebbfddd239d53b3a0eeb19eb2f91fec6fed7"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/drbd
 # see https://github.com/siderolabs/extensions/tree/main/storage/drbd
 # see https://github.com/LINBIT/drbd
-talos_drbd_extension_tag="9.2.16-v1.11.6@sha256:f87f92f25e203a3d49ced3d5bfe9d19278c309b157a5c049ff8c1fd53cf77707"
+talos_drbd_extension_tag="9.2.16-v1.12.1@sha256:2c0dc35d5f3e1ac23de6eeee5554d9da010ac848a733a538c9568a9ccc782d86"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/spin
 # see https://github.com/siderolabs/extensions/tree/main/container-runtime/spin
-talos_spin_extension_tag="v0.21.0@sha256:0f2e3915d08800b145f9f55923aef8c05f5378d504da845beeee06d3645980ed"
+talos_spin_extension_tag="v0.22.0@sha256:823c3b673011e14db0afa3c8bf259f9438b3e1a9cd6ef82f3c6a73b792c392fb"
 
 # see https://github.com/piraeusdatastore/piraeus-operator/releases
 # renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator
@@ -59,9 +59,9 @@ function update-talos-extensions {
 }
 
 function build_talos_image {
-  # see https://www.talos.dev/v1.11/talos-guides/install/boot-assets/
-  # see https://www.talos.dev/v1.11/advanced/metal-network-configuration/
-  # see Profile type at https://github.com/siderolabs/talos/blob/v1.11.6/pkg/imager/profile/profile.go#L23-L46
+  # see https://docs.siderolabs.com/talos/v1.12/platform-specific-installations/boot-assets
+  # see https://docs.siderolabs.com/talos/v1.12/platform-specific-installations/bare-metal-platforms/network-config
+  # see Profile type at https://github.com/siderolabs/talos/blob/v1.12.1/pkg/imager/profile/profile.go#L24-L47
   local talos_version_tag="v$talos_version"
   rm -rf tmp/talos
   mkdir -p tmp/talos
@@ -152,7 +152,7 @@ function piraeus-install {
   # see https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#ch-kubernetes
   # see 5.7.1. Available Parameters in a Storage Class at https://linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-kubernetes-sc-parameters
   # see https://linbit.com/drbd-user-guide/drbd-guide-9_0-en/
-  # see https://www.talos.dev/v1.11/kubernetes-guides/configuration/storage/#piraeus--linstor
+  # see https://docs.siderolabs.com/kubernetes-guides/csi/storage#piraeus-%2F-linstor
   step 'piraeus install'
   kubectl apply --server-side -k "https://github.com/piraeusdatastore/piraeus-operator//config/default?ref=v$piraeus_operator_version"
   step 'piraeus wait'
@@ -275,9 +275,10 @@ function info {
   for n in "${nodes[@]}"; do
     # NB there can be multiple machineconfigs in a machine. we only want to see
     #    the ones with an id that looks like a version tag.
+    # NB machineconfigs.spec is a multi-document yaml.
     talosctl -n $n get machineconfigs -o json \
       | jq -r 'select(.metadata.id | test("v\\d+")) | .spec' \
-      | yq -r '.machine.install.image' \
+      | yq -r '.machine.install.image | select(.)' \
       | sed -E "s,(.+),$n: \1,g"
   done
   step 'talos node os-release'
