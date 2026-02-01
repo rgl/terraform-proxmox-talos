@@ -22,6 +22,12 @@ talos_spin_extension_tag="v0.22.0@sha256:823c3b673011e14db0afa3c8bf259f9438b3e1a
 # renovate: datasource=github-releases depName=piraeusdatastore/piraeus-operator
 piraeus_operator_version="2.10.4"
 
+# see https://hub.docker.com/r/curlimages/curl
+# see https://github.com/curl/curl-container
+# renovate: datasource=docker depName=curlimages/curl
+curl_image_version='8.17.0'
+curl_image="curlimages/curl:$curl_image_version"
+
 export CHECKPOINT_DISABLE='1'
 export TF_LOG='DEBUG' # TRACE, DEBUG, INFO, WARN or ERROR.
 export TF_LOG_PATH='terraform.log'
@@ -171,7 +177,7 @@ function piraeus-install {
       --wait \
       --stdin \
       --tty \
-      --image alpine/curl:8.14.1 \
+      --image "$curl_image" \
       -- \
       curl \
         --insecure \
