@@ -251,7 +251,7 @@ EOF
   for ((n=0; n<${#nodes[@]}; ++n)); do
     local node="w$((n))"
     step "piraeus wait node $node"
-    while ! kubectl linstor storage-pool list --node "$node" >/dev/null 2>&1; do sleep 3; done
+    while ! kubectl linstor storage-pool list --node "$node" 2>&1 | grep -q "$node;DfltDisklessStorPool"; do sleep 3; done
     step "piraeus create-device-pool $node"
     if ! kubectl linstor storage-pool list --node "$node" --storage-pool lvm | grep -q lvm; then
       kubectl linstor physical-storage create-device-pool \
