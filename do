@@ -3,16 +3,16 @@ set -euo pipefail
 
 # see https://github.com/siderolabs/talos/releases
 # renovate: datasource=github-releases depName=siderolabs/talos
-talos_version="1.12.7"
+talos_version="1.13.0"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/qemu-guest-agent
 # see https://github.com/siderolabs/extensions/tree/main/guest-agents/qemu-guest-agent
-talos_qemu_guest_agent_extension_tag="10.2.0@sha256:3a34889fcc1023f2b091fe38204387181b44c8d71eea784b41132e4c167f3497"
+talos_qemu_guest_agent_extension_tag="10.2.2@sha256:44466b449f3209fc2b67f14f203ef5ffe2320b92dd516a9c170183fcbd4789a7"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/drbd
 # see https://github.com/siderolabs/extensions/tree/main/storage/drbd
 # see https://github.com/LINBIT/drbd
-talos_drbd_extension_tag="9.2.16-v1.12.7@sha256:be407c20d509a1a445310636b0508008a8e5cd8e1532fbd11e5d131ae2fe9dca"
+talos_drbd_extension_tag="9.3.1-v1.13.0@sha256:414c94ab6c73c6f20b4dbfce53383fd9ea7bc485d76ceaee5eb6360d2bddcc40"
 
 # see https://github.com/siderolabs/extensions/pkgs/container/spin
 # see https://github.com/siderolabs/extensions/tree/main/container-runtime/spin
@@ -65,9 +65,9 @@ function update-talos-extensions {
 }
 
 function build_talos_image {
-  # see https://docs.siderolabs.com/talos/v1.12/platform-specific-installations/boot-assets
-  # see https://docs.siderolabs.com/talos/v1.12/platform-specific-installations/bare-metal-platforms/network-config
-  # see Profile type at https://github.com/siderolabs/talos/blob/v1.12.7/pkg/imager/profile/profile.go#L24-L47
+  # see https://docs.siderolabs.com/talos/v1.13/platform-specific-installations/boot-assets
+  # see https://docs.siderolabs.com/talos/v1.13/platform-specific-installations/bare-metal-platforms/network-config
+  # see Profile type at https://github.com/siderolabs/talos/blob/v1.13.0/pkg/imager/profile/profile.go#L24-L50
   local talos_version_tag="v$talos_version"
   rm -rf tmp/talos
   mkdir -p tmp/talos
@@ -100,8 +100,6 @@ EOF
   docker run --rm -i \
     -v $PWD/tmp/talos:/secureboot:ro \
     -v $PWD/tmp/talos:/out \
-    -v /dev:/dev \
-    --privileged \
     "ghcr.io/siderolabs/imager:$talos_version_tag" \
     - < "tmp/talos/talos-$talos_version.yml"
   local img_path="tmp/talos/talos-$talos_version.qcow2"

@@ -67,7 +67,7 @@ Install talosctl:
 ```bash
 # see https://github.com/siderolabs/talos/releases
 # renovate: datasource=github-releases depName=siderolabs/talos
-talos_version='1.12.7'
+talos_version='1.13.0'
 wget https://github.com/siderolabs/talos/releases/download/v$talos_version/talosctl-linux-amd64
 sudo install talosctl-linux-amd64 /usr/local/bin/talosctl
 rm talosctl-linux-amd64
@@ -442,8 +442,10 @@ Update the talos extensions to match the talos version:
 Talos:
 
 ```bash
-# see https://docs.siderolabs.com/talos/v1.12/troubleshooting/troubleshooting
+# see https://docs.siderolabs.com/talos/v1.13/troubleshooting/troubleshooting
+# see https://docs.siderolabs.com/talos/v1.13/troubleshooting/talosctl-debug
 talosctl -n $all support && rm -rf support && 7z x -osupport support.zip && code support
+talosctl -n $c0 debug docker.io/library/alpine:3.23
 talosctl -n $c0 service ext-qemu-guest-agent status
 talosctl -n $c0 service etcd status
 talosctl -n $c0 etcd status
