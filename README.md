@@ -341,7 +341,8 @@ Create the `argocd-example` argocd application:
 argocd login \
   "$argocd_server_fqdn" \
   --username admin \
-  --password "$argocd_server_admin_password"
+  --password "$argocd_server_admin_password" \
+  --plaintext
 argocd cluster list
 # NB we have to access gitea thru the internal cluster service because the
 #    external/ingress domains does not resolve inside the cluster.
