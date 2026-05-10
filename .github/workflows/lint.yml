@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
         with:
           # see https://github.com/hashicorp/terraform/releases
           # renovate: datasource=github-releases depName=hashicorp/terraform
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
         with:
           # see https://github.com/hashicorp/terraform/releases
           # renovate: datasource=github-releases depName=hashicorp/terraform
