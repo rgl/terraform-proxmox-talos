@@ -25,7 +25,7 @@ piraeus_operator_version="2.10.6"
 # see https://hub.docker.com/r/curlimages/curl
 # see https://github.com/curl/curl-container
 # renovate: datasource=docker depName=curlimages/curl
-curl_image_version='8.18.0'
+curl_image_version='8.20.0'
 curl_image="curlimages/curl:$curl_image_version"
 
 export CHECKPOINT_DISABLE='1'
